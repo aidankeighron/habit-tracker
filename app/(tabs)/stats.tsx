@@ -62,7 +62,7 @@ export default function StatsScreen() {
     // I need to update the component to use settings from context.
     
     return (
-      <View style={[styles.chartContainer, { backgroundColor: colorTheme.light, width: (screenWidth / 2) - 20 }]}>
+      <View style={[styles.chartContainer, { backgroundColor: colorTheme.light }]}>
         <Text style={[styles.chartTitle, { color: colorTheme.dark }]}>{title}</Text>
         <LineChart
           data={{
@@ -77,7 +77,7 @@ export default function StatsScreen() {
               }
             ]
           }}
-          width={(screenWidth / 2) - 30}
+          width={screenWidth - 40}
           height={180}
           chartConfig={{
             backgroundColor: colorTheme.light,
@@ -142,12 +142,10 @@ export default function StatsScreen() {
       )}
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.grid}>
           {renderChart('Water', 'water', 'Cups', Colors.pastel.water)}
           {renderChart('Food', 'food', 'Meals', Colors.pastel.food)}
           {renderChart('Stretch', 'stretch', 'Times', Colors.pastel.stretch)}
           {renderChart('Workout', 'workout', 'Mins', Colors.pastel.workout)}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -210,12 +208,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
     zIndex: 1,
-    paddingHorizontal: 10, // Added padding to avoid charts touching edges
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    paddingHorizontal: 10,
   },
   chartContainer: {
     marginBottom: 15,
