@@ -6,6 +6,14 @@ import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitTyp
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
 
+const getEffectiveDate = (rolloverHour: number = 0) => {
+  const now = new Date();
+  if (now.getHours() < rolloverHour) {
+    now.setDate(now.getDate() - 1);
+  }
+  return now.toISOString().split('T')[0];
+};
+
 const KEYS = {
   WATER: 'water_history',
   FOOD: 'food_history',
@@ -53,11 +61,14 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [settings, setSettings] = useState<HabitSettings>({
     totals: { water: 8, food: 3, workout: 30, stretch: 2 },
     notifications: { water: 2, food: 4, workout: 16, stretch: 6 }, // Default hours
+    rolloverHour: 0,
   });
+
+  const [today, setToday] = useState(getEffectiveDate(0));
 
   const appState = useRef(AppState.currentState);
 
-  const getTodayDate = () => new Date().toISOString().split('T')[0];
+  // const getTodayDate = () => new Date().toISOString().split('T')[0]; // Removed in favor of today state
 
   useEffect(() => {
     loadData();
@@ -101,7 +112,13 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
 
       if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
+        const parsedSettings = JSON.parse(storedSettings);
+        // Ensure rolloverHour exists for existing users
+        if (parsedSettings.rolloverHour === undefined) {
+            parsedSettings.rolloverHour = 0;
+        }
+        setSettings(parsedSettings);
+        setToday(getEffectiveDate(parsedSettings.rolloverHour));
       }
       
       if (storedLastUpdated) {
@@ -119,6 +136,11 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         nextAppState === 'active'
       ) {
         refreshNotifications();
+        // Check if date changed
+        const currentEffectiveDate = getEffectiveDate(settings.rolloverHour);
+        if (currentEffectiveDate !== today) {
+            setToday(currentEffectiveDate);
+        }
       }
 
       appState.current = nextAppState;
@@ -174,7 +196,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateHabit = async (type: HabitType, value: number) => {
-    const today = getTodayDate();
+    // Use the reactive 'today' state
     const newHistory = { ...history };
     newHistory[type] = { ...newHistory[type], [today]: value };
     setHistory(newHistory);
@@ -227,7 +249,19 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const today = getTodayDate();
+  const updateRolloverHour = async (hour: number) => {
+    const newSettings = { ...settings };
+    newSettings.rolloverHour = hour;
+    setSettings(newSettings);
+    await AsyncStorage.setItem(KEYS.SETTINGS, JSON.stringify(newSettings));
+    
+    // Recalculate today immediately
+    const newToday = getEffectiveDate(hour);
+    if (newToday !== today) {
+        setToday(newToday);
+    }
+  };
+
   const habits: DailyHabitData = {
     water: history.water[today] || 0,
     food: history.food[today] || 0,
@@ -236,7 +270,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, updateHabit, updateTotal, editHistory, updateNotificationInterval } as any}>
+    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, editHistory, updateNotificationInterval, updateRolloverHour } as any}>
       {children}
     </HabitContext.Provider>
   );

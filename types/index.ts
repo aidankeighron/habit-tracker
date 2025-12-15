@@ -24,6 +24,7 @@ export interface HabitSettings {
     workout: number;
     stretch: number;
   };
+  rolloverHour: number;
 }
 
 export interface HabitContextType {
@@ -41,8 +42,10 @@ export interface HabitContextType {
     workout: string | null;
     stretch: string | null;
   };
+  today: string;
   updateHabit: (type: HabitType, value: number) => void;
   updateTotal: (type: HabitType, total: number) => void;
   updateNotificationInterval: (type: HabitType, hours: number) => void;
   editHistory: (type: HabitType, date: string, value: number) => void;
+  updateRolloverHour: (hour: number) => void;
 }

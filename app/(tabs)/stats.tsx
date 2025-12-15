@@ -12,7 +12,7 @@ const screenWidth = Dimensions.get('window').width;
 type TimeRange = '7days' | '14days' | '7weeksAVG' | '7weeksTOT';
 
 export default function StatsScreen() {
-  const { history, settings } = useHabits();
+  const { history, settings, today } = useHabits();
   const [range, setRange] = useState<TimeRange>('7days');
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -30,7 +30,7 @@ export default function StatsScreen() {
 
     if (range === '7days' || range === '14days') {
       const days = range === '7days' ? 7 : 14;
-      const dates = getPastDaysCoordinates(days);
+      const dates = getPastDaysCoordinates(days, today);
       
       data = dates.map(date => habitHistory[date] || 0);
       labels = dates.map((date, index) => {
@@ -39,7 +39,7 @@ export default function StatsScreen() {
          return `${d.getMonth() + 1}/${d.getDate()}`;
       });
     } else {
-        const weeks = getPastWeeksCoordinates(7);
+        const weeks = getPastWeeksCoordinates(7, today);
         data = weeks.map(weekDates => {
             const sum = weekDates.reduce((acc, date) => acc + (habitHistory[date] || 0), 0);
             return range === '7weeksAVG' ? sum / 7 : sum;

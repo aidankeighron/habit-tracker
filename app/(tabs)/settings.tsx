@@ -5,7 +5,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, Te
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
-  const { settings, updateTotal, history, editHistory, updateNotificationInterval } = useHabits();
+  const { settings, updateTotal, history, editHistory, updateNotificationInterval, updateRolloverHour } = useHabits();
   
   const [waterTotal, setWaterTotal] = useState(settings.totals.water.toString());
   const [foodTotal, setFoodTotal] = useState(settings.totals.food.toString());
@@ -16,6 +16,8 @@ export default function SettingsScreen() {
   const [foodInterval, setFoodInterval] = useState(settings.notifications.food.toString());
   const [workoutInterval, setWorkoutInterval] = useState(settings.notifications.workout.toString());
   const [stretchInterval, setStretchInterval] = useState(settings.notifications.stretch.toString());
+
+  const [rolloverHour, setRolloverHour] = useState(settings.rolloverHour.toString());
 
   const [editDate, setEditDate] = useState(new Date().toISOString().split('T')[0]);
   const [editWater, setEditWater] = useState('');
@@ -33,7 +35,12 @@ export default function SettingsScreen() {
     updateNotificationInterval('water', parseFloat(waterInterval) || 0);
     updateNotificationInterval('food', parseFloat(foodInterval) || 0);
     updateNotificationInterval('workout', parseFloat(workoutInterval) || 0);
+    updateNotificationInterval('workout', parseFloat(workoutInterval) || 0);
     updateNotificationInterval('stretch', parseFloat(stretchInterval) || 0);
+    
+    // Save Rollover Hour
+    updateRolloverHour(parseInt(rolloverHour) || 0);
+
     Alert.alert('Success', 'Goals updated successfully.');
   };
 
@@ -110,6 +117,16 @@ export default function SettingsScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Stretch</Text>
           <TextInput style={styles.input} value={stretchInterval} onChangeText={setStretchInterval} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Rollover Time</Text>
+        <Text style={styles.subtitle}>Hour of the day when habits reset (0-23). E.g. 4 for 4 AM.</Text>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Rollover Hour</Text>
+          <TextInput style={styles.input} value={rolloverHour} onChangeText={setRolloverHour} keyboardType="numeric" 
               placeholderTextColor={Colors.pastel.global.text + '80'}/>
         </View>
       </View>

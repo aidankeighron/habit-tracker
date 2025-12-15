@@ -1,6 +1,6 @@
-export const getPastDaysCoordinates = (days: number) => {
+export const getPastDaysCoordinates = (days: number, referenceDateStr?: string) => {
   const dates = [];
-  const today = new Date();
+  const today = referenceDateStr ? new Date(referenceDateStr) : new Date();
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
@@ -9,11 +9,11 @@ export const getPastDaysCoordinates = (days: number) => {
   return dates;
 };
 
-export const getPastWeeksCoordinates = (weeks: number) => {
+export const getPastWeeksCoordinates = (weeks: number, referenceDateStr?: string) => {
   // Returns array of arrays of dates for each week.
   // Current week (ending today) is 0.
   const weeksData: string[][] = [];
-  const today = new Date();
+  const today = referenceDateStr ? new Date(referenceDateStr) : new Date();
   
   // Align so the last week ends today.
   
