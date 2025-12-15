@@ -19,6 +19,7 @@ const KEYS = {
   FOOD: 'food_history',
   WORKOUT: 'workout_history',
   STRETCH: 'stretch_history',
+  RACING: 'racing_history',
   LAST_UPDATED: 'last_updated',
   SETTINGS: 'habit_settings',
 };
@@ -39,11 +40,13 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     food: HabitHistory;
     workout: HabitHistory;
     stretch: HabitHistory;
+    racing: HabitHistory;
   }>({
     water: {},
     food: {},
     workout: {},
     stretch: {},
+    racing: {},
   });
 
   const [lastUpdated, setLastUpdated] = useState<{
@@ -51,16 +54,18 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     food: string | null;
     workout: string | null;
     stretch: string | null;
+    racing: string | null;
   }>({
     water: null,
     food: null,
     workout: null,
     stretch: null,
+    racing: null,
   });
 
   const [settings, setSettings] = useState<HabitSettings>({
-    totals: { water: 8, food: 3, workout: 30, stretch: 2 },
-    notifications: { water: 2, food: 4, workout: 16, stretch: 6 }, // Default hours
+    totals: { water: 8, food: 3, workout: 30, stretch: 2, racing: 1 },
+    notifications: { water: 2, food: 4, workout: 16, stretch: 6, racing: -1 }, // Default hours
     rolloverHour: 0,
   });
 
@@ -95,11 +100,12 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const loadData = async () => {
     try {
-      const [water, food, workout, stretch, storedSettings, storedLastUpdated] = await Promise.all([
+      const [water, food, workout, stretch, racing, storedSettings, storedLastUpdated] = await Promise.all([
         AsyncStorage.getItem(KEYS.WATER),
         AsyncStorage.getItem(KEYS.FOOD),
         AsyncStorage.getItem(KEYS.WORKOUT),
         AsyncStorage.getItem(KEYS.STRETCH),
+        AsyncStorage.getItem(KEYS.RACING),
         AsyncStorage.getItem(KEYS.SETTINGS),
         AsyncStorage.getItem(KEYS.LAST_UPDATED),
       ]);
@@ -109,14 +115,25 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         food: food ? JSON.parse(food) : {},
         workout: workout ? JSON.parse(workout) : {},
         stretch: stretch ? JSON.parse(stretch) : {},
+        racing: racing ? JSON.parse(racing) : {},
       });
 
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings);
-        // Ensure rolloverHour exists for existing users
+        
+        // Ensure defaults for new fields exist for existing users
         if (parsedSettings.rolloverHour === undefined) {
             parsedSettings.rolloverHour = 0;
         }
+        
+        if (parsedSettings.totals.racing === undefined) {
+            parsedSettings.totals.racing = 1;
+        }
+        
+        if (parsedSettings.notifications.racing === undefined) {
+            parsedSettings.notifications.racing = -1;
+        }
+
         setSettings(parsedSettings);
         setToday(getEffectiveDate(parsedSettings.rolloverHour));
       }
@@ -157,6 +174,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       scheduleReminder('food'),
       scheduleReminder('workout'),
       scheduleReminder('stretch'),
+      scheduleReminder('racing'),
     ]);
   };
   
@@ -164,7 +182,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const lastUpdateStr = lastUpdated[type];
     const intervalHours = settings.notifications[type];
     
-    if (!lastUpdateStr || !intervalHours) return; // If no data, don't schedule
+    if (!lastUpdateStr || !intervalHours || intervalHours <= 0) return; // If no data or disabled (<= 0), don't schedule
     
     // We pass current values to the helper logic
     scheduleReminderForType(type, lastUpdateStr, intervalHours);
@@ -210,6 +228,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'food') key = KEYS.FOOD;
     if (type === 'workout') key = KEYS.WORKOUT;
     if (type === 'stretch') key = KEYS.STRETCH;
+    if (type === 'racing') key = KEYS.RACING;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
     await AsyncStorage.setItem(KEYS.LAST_UPDATED, JSON.stringify(newLastUpdated));
@@ -226,6 +245,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'food') key = KEYS.FOOD;
     if (type === 'workout') key = KEYS.WORKOUT;
     if (type === 'stretch') key = KEYS.STRETCH;
+    if (type === 'racing') key = KEYS.RACING;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
   };
@@ -267,6 +287,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     food: history.food[today] || 0,
     workout: history.workout[today] || 0,
     stretch: history.stretch[today] || 0,
+    racing: history.racing[today] || 0,
   };
 
   return (

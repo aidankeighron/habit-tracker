@@ -1,10 +1,11 @@
-export type HabitType = 'water' | 'food' | 'workout' | 'stretch';
+export type HabitType = 'water' | 'food' | 'workout' | 'stretch' | 'racing';
 
 export interface DailyHabitData {
   water: number;
   food: number;
   workout: number;
   stretch: number;
+  racing: number;
 }
 
 export interface HabitHistory {
@@ -17,12 +18,14 @@ export interface HabitSettings {
     food: number;
     workout: number;
     stretch: number;
+    racing: number;
   };
   notifications: {
     water: number;
     food: number;
     workout: number;
     stretch: number;
+    racing: number;
   };
   rolloverHour: number;
 }
@@ -34,6 +37,7 @@ export interface HabitContextType {
     food: HabitHistory;
     workout: HabitHistory;
     stretch: HabitHistory;
+    racing: HabitHistory;
   };
   settings: HabitSettings;
   lastUpdated: {
@@ -41,6 +45,7 @@ export interface HabitContextType {
     food: string | null;
     workout: string | null;
     stretch: string | null;
+    racing: string | null;
   };
   today: string;
   updateHabit: (type: HabitType, value: number) => void;

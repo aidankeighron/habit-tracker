@@ -52,5 +52,11 @@ export const Colors = {
       medium: '#FF9800',
       accent: '#FFE0B2',
     },
+    racing: {
+      light: '#FFEBEE',
+      dark: '#B71C1C',
+      medium: '#F44336',
+      accent: '#EF9A9A',
+    },
   }
 };

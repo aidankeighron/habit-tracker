@@ -23,7 +23,7 @@ export default function StatsScreen() {
     { label: 'Last 7 Weeks (Tot)', value: '7weeksTOT' },
   ];
 
-  const getData = (type: 'water' | 'food' | 'workout' | 'stretch') => {
+  const getData = (type: 'water' | 'food' | 'workout' | 'stretch' | 'racing') => {
     const habitHistory = history[type];
     let labels: string[] = [];
     let data: number[] = [];
@@ -53,7 +53,7 @@ export default function StatsScreen() {
     };
   };
 
-  const renderChart = (title: string, type: 'water' | 'food' | 'workout' | 'stretch', unit: string, colorTheme: any) => {
+  const renderChart = (title: string, type: 'water' | 'food' | 'workout' | 'stretch' | 'racing', unit: string, colorTheme: any) => {
     const chartData = getData(type);
     const goal = settings.totals[type] || 2; 
     // Wait, 'history' contains history, 'settings' is in context but not destructured in line 15. I need to get settings.
@@ -146,6 +146,7 @@ export default function StatsScreen() {
           {renderChart('Food', 'food', 'Meals', Colors.pastel.food)}
           {renderChart('Stretch', 'stretch', 'Times', Colors.pastel.stretch)}
           {renderChart('Workout', 'workout', 'Mins', Colors.pastel.workout)}
+          {renderChart('Racing', 'racing', 'Races', Colors.pastel.racing)}
       </ScrollView>
     </SafeAreaView>
   );

@@ -11,11 +11,13 @@ export default function SettingsScreen() {
   const [foodTotal, setFoodTotal] = useState(settings.totals.food.toString());
   const [workoutTotal, setWorkoutTotal] = useState(settings.totals.workout.toString());
   const [stretchTotal, setStretchTotal] = useState(settings.totals.stretch.toString());
+  const [racingTotal, setRacingTotal] = useState(settings.totals.racing.toString());
 
   const [waterInterval, setWaterInterval] = useState(settings.notifications.water.toString());
   const [foodInterval, setFoodInterval] = useState(settings.notifications.food.toString());
   const [workoutInterval, setWorkoutInterval] = useState(settings.notifications.workout.toString());
   const [stretchInterval, setStretchInterval] = useState(settings.notifications.stretch.toString());
+  const [racingInterval, setRacingInterval] = useState(settings.notifications.racing.toString());
 
   const [rolloverHour, setRolloverHour] = useState(settings.rolloverHour.toString());
 
@@ -24,19 +26,21 @@ export default function SettingsScreen() {
   const [editFood, setEditFood] = useState('');
   const [editWorkout, setEditWorkout] = useState('');
   const [editStretch, setEditStretch] = useState('');
+  const [editRacing, setEditRacing] = useState('');
 
   const saveTotals = () => {
     updateTotal('water', parseFloat(waterTotal) || 0);
     updateTotal('food', parseFloat(foodTotal) || 0);
     updateTotal('workout', parseFloat(workoutTotal) || 0);
     updateTotal('stretch', parseFloat(stretchTotal) || 0);
+    updateTotal('racing', parseFloat(racingTotal) || 0);
     
     // Save Notification Intervals
     updateNotificationInterval('water', parseFloat(waterInterval) || 0);
     updateNotificationInterval('food', parseFloat(foodInterval) || 0);
     updateNotificationInterval('workout', parseFloat(workoutInterval) || 0);
-    updateNotificationInterval('workout', parseFloat(workoutInterval) || 0);
     updateNotificationInterval('stretch', parseFloat(stretchInterval) || 0);
+    updateNotificationInterval('racing', parseFloat(racingInterval) || -1); // Default to -1 if invalid, though logic might handle it
     
     // Save Rollover Hour
     updateRolloverHour(parseInt(rolloverHour) || 0);
@@ -55,6 +59,7 @@ export default function SettingsScreen() {
     setEditFood((history.food[editDate] || 0).toString());
     setEditWorkout((history.workout[editDate] || 0).toString());
     setEditStretch((history.stretch[editDate] || 0).toString());
+    setEditRacing((history.racing[editDate] || 0).toString());
   };
 
   const saveHistoryData = () => {
@@ -62,6 +67,7 @@ export default function SettingsScreen() {
     editHistory('food', editDate, parseFloat(editFood) || 0);
     editHistory('workout', editDate, parseFloat(editWorkout) || 0);
     editHistory('stretch', editDate, parseFloat(editStretch) || 0);
+    editHistory('racing', editDate, parseFloat(editRacing) || 0);
     Alert.alert('Success', `Data for ${editDate} updated.`);
   };
 
@@ -95,6 +101,11 @@ export default function SettingsScreen() {
           <TextInput style={styles.input} value={stretchTotal} onChangeText={setStretchTotal} keyboardType="numeric" 
               placeholderTextColor={Colors.pastel.global.text + '80'}/>
         </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Racing (Races)</Text>
+          <TextInput style={styles.input} value={racingTotal} onChangeText={setRacingTotal} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -117,6 +128,11 @@ export default function SettingsScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Stretch</Text>
           <TextInput style={styles.input} value={stretchInterval} onChangeText={setStretchInterval} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Racing</Text>
+          <TextInput style={styles.input} value={racingInterval} onChangeText={setRacingInterval} keyboardType="numeric" 
               placeholderTextColor={Colors.pastel.global.text + '80'}/>
         </View>
       </View>
@@ -188,12 +204,24 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <View style={styles.inputGroup}>
+       <View style={styles.inputGroup}>
             <Text style={styles.label}>Stretch</Text>
             <TextInput 
               style={styles.input} 
               value={editStretch} 
               onChangeText={setEditStretch} 
+              keyboardType="numeric"
+              placeholder="Load date first"
+              placeholderTextColor={Colors.pastel.global.text + '80'}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Racing</Text>
+            <TextInput 
+              style={styles.input} 
+              value={editRacing} 
+              onChangeText={setEditRacing} 
               keyboardType="numeric"
               placeholder="Load date first"
               placeholderTextColor={Colors.pastel.global.text + '80'}

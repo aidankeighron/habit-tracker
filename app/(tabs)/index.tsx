@@ -1,4 +1,5 @@
 import FoodSection from '@/components/FoodSection';
+import RacingSection from '@/components/RacingSection';
 import StretchSection from '@/components/StretchSection';
 import WaterSection from '@/components/WaterSection';
 import WorkoutSection from '@/components/WorkoutSection';
@@ -14,6 +15,7 @@ export default function HomeScreen() {
       <FoodSection />
       <StretchSection />
       <WorkoutSection />
+      <RacingSection />
     </SafeAreaView>
   );
 }
