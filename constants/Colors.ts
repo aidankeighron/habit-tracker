@@ -40,10 +40,10 @@ export const Colors = {
       accent: '#A5D6A7', 
     },
     workout: {
-      light: '#FAFAFA', 
+      light: '#E0E0E0', 
       dark: '#212121', 
       medium: '#9E9E9E',
-      inputBg: '#EEEEEE',
+      inputBg: '#F5F5F5', // Making input slightly lighter than bg for contrast
       accent: '#BDBDBD',
     },
   }
