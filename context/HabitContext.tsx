@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as Notifications from 'expo-notifications';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
@@ -9,8 +11,19 @@ const KEYS = {
   FOOD: 'food_history',
   WORKOUT: 'workout_history',
   STRETCH: 'stretch_history',
+  LAST_UPDATED: 'last_updated',
   SETTINGS: 'habit_settings',
 };
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [history, setHistory] = useState<{
@@ -25,9 +38,24 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     stretch: {},
   });
 
+  const [lastUpdated, setLastUpdated] = useState<{
+    water: string | null;
+    food: string | null;
+    workout: string | null;
+    stretch: string | null;
+  }>({
+    water: null,
+    food: null,
+    workout: null,
+    stretch: null,
+  });
+
   const [settings, setSettings] = useState<HabitSettings>({
     totals: { water: 8, food: 3, workout: 30, stretch: 2 },
+    notifications: { water: 2, food: 4, workout: 16, stretch: 6 }, // Default hours
   });
+
+  const appState = useRef(AppState.currentState);
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
 
@@ -37,12 +65,13 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const loadData = async () => {
     try {
-      const [water, food, workout, stretch, storedSettings] = await Promise.all([
+      const [water, food, workout, stretch, storedSettings, storedLastUpdated] = await Promise.all([
         AsyncStorage.getItem(KEYS.WATER),
         AsyncStorage.getItem(KEYS.FOOD),
         AsyncStorage.getItem(KEYS.WORKOUT),
         AsyncStorage.getItem(KEYS.STRETCH),
         AsyncStorage.getItem(KEYS.SETTINGS),
+        AsyncStorage.getItem(KEYS.LAST_UPDATED),
       ]);
 
       setHistory({
@@ -55,30 +84,86 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (storedSettings) {
         setSettings(JSON.parse(storedSettings));
       }
+      
+      if (storedLastUpdated) {
+        setLastUpdated(JSON.parse(storedLastUpdated));
+      }
     } catch (e) {
       console.error('Failed to load habit data', e);
     }
   };
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        refreshNotifications();
+      }
+
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [lastUpdated, settings]);
+
+  const refreshNotifications = async () => {
+    await Promise.all([
+      scheduleReminder('water'),
+      scheduleReminder('food'),
+      scheduleReminder('workout'),
+      scheduleReminder('stretch'),
+    ]);
+  };
+  
+  const scheduleReminder = async (type: HabitType) => {
+    const lastUpdateStr = lastUpdated[type];
+    const intervalHours = settings.notifications[type];
+    
+    if (!lastUpdateStr || !intervalHours) return; // If no data, don't schedule
+    
+    // We pass current values to the helper logic
+    scheduleReminderForType(type, lastUpdateStr, intervalHours);
+  };
+
+  const scheduleReminderForType = async (type: HabitType, lastUpdateStr: string, intervalHours: number) => {
+      const identifier = `reminder-${type}`;
+      await Notifications.cancelScheduledNotificationAsync(identifier);
+      
+      const lastUpdate = new Date(lastUpdateStr);
+      const now = new Date();
+      // Calculate trigger date
+      const triggerDate = new Date(lastUpdate.getTime() + intervalHours * 60 * 60 * 1000);
+      
+      let secondsUntil = (triggerDate.getTime() - now.getTime()) / 1000;
+      
+      if (secondsUntil <= 0) {
+        secondsUntil = 1; 
+      }
+      
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Habit Reminder",
+          body: `It's been a while since you updated your ${type} habit!`,
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: Math.max(1, Math.floor(secondsUntil)) },
+        identifier,
+      });
+  };
+
   const updateHabit = async (type: HabitType, value: number) => {
     const today = getTodayDate();
     const newHistory = { ...history };
-    // Current value for today
-    const currentVal = newHistory[type][today] || 0;
-    // New value (accumulator or replacement? Requirement says "buttons increase/decrease", workout "replaces/adds"?
-    // User said: "plus and minus buttons should increase and decrease". "workout... counter should display 0... when button pressed display whatever number is in text input" -> workout is set, others are increment.
-    
-    // Wait, the UI logic should handle increment/decrement. The context should probably just take the absolute value or delta. 
-    // The prompt says "updated whenever the counter changes". The interface allows setting value. 
-    // I will expose a method to SET the value for a date. The UI components will calculate the new value.
-    
-    // But wait, "updateHabit" in my interface signature was (type, value). I should clarify if value is delta or absolute.
-    // The workout section: "when button is pressed it should display whatever number is in the number text input". This implies SET.
-    // Water/Food: "increase and decrease". This implies INCREMENT.
-    // I will make `updateHabit` take the NEW TOTAL VALUE for today to be safe and simple.
-    
     newHistory[type] = { ...newHistory[type], [today]: value };
     setHistory(newHistory);
+    
+    // Update Last Updated
+    const nowStr = new Date().toISOString();
+    const newLastUpdated = { ...lastUpdated, [type]: nowStr };
+    setLastUpdated(newLastUpdated);
     
     let key = KEYS.WATER;
     if (type === 'food') key = KEYS.FOOD;
@@ -86,6 +171,9 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'stretch') key = KEYS.STRETCH;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
+    await AsyncStorage.setItem(KEYS.LAST_UPDATED, JSON.stringify(newLastUpdated));
+    
+    scheduleReminderForType(type, nowStr, settings.notifications[type]);
   };
 
   const editHistory = async (type: HabitType, date: string, value: number) => {
@@ -107,6 +195,18 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setSettings(newSettings);
     await AsyncStorage.setItem(KEYS.SETTINGS, JSON.stringify(newSettings));
   };
+  
+  const updateNotificationInterval = async (type: HabitType, hours: number) => {
+    const newSettings = { ...settings };
+    newSettings.notifications[type] = hours;
+    setSettings(newSettings);
+    await AsyncStorage.setItem(KEYS.SETTINGS, JSON.stringify(newSettings));
+    
+    // Reschedule immediate
+    if (lastUpdated[type]) {
+        scheduleReminderForType(type, lastUpdated[type]!, hours);
+    }
+  };
 
   const today = getTodayDate();
   const habits: DailyHabitData = {
@@ -117,7 +217,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <HabitContext.Provider value={{ habits, history, settings, updateHabit, updateTotal, editHistory }}>
+    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, updateHabit, updateTotal, editHistory, updateNotificationInterval } as any}>
       {children}
     </HabitContext.Provider>
   );

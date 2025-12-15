@@ -5,12 +5,17 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, Te
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
-  const { settings, updateTotal, history, editHistory } = useHabits();
+  const { settings, updateTotal, history, editHistory, updateNotificationInterval } = useHabits();
   
   const [waterTotal, setWaterTotal] = useState(settings.totals.water.toString());
   const [foodTotal, setFoodTotal] = useState(settings.totals.food.toString());
   const [workoutTotal, setWorkoutTotal] = useState(settings.totals.workout.toString());
   const [stretchTotal, setStretchTotal] = useState(settings.totals.stretch.toString());
+
+  const [waterInterval, setWaterInterval] = useState(settings.notifications.water.toString());
+  const [foodInterval, setFoodInterval] = useState(settings.notifications.food.toString());
+  const [workoutInterval, setWorkoutInterval] = useState(settings.notifications.workout.toString());
+  const [stretchInterval, setStretchInterval] = useState(settings.notifications.stretch.toString());
 
   const [editDate, setEditDate] = useState(new Date().toISOString().split('T')[0]);
   const [editWater, setEditWater] = useState('');
@@ -23,6 +28,12 @@ export default function SettingsScreen() {
     updateTotal('food', parseFloat(foodTotal) || 0);
     updateTotal('workout', parseFloat(workoutTotal) || 0);
     updateTotal('stretch', parseFloat(stretchTotal) || 0);
+    
+    // Save Notification Intervals
+    updateNotificationInterval('water', parseFloat(waterInterval) || 0);
+    updateNotificationInterval('food', parseFloat(foodInterval) || 0);
+    updateNotificationInterval('workout', parseFloat(workoutInterval) || 0);
+    updateNotificationInterval('stretch', parseFloat(stretchInterval) || 0);
     Alert.alert('Success', 'Goals updated successfully.');
   };
 
@@ -56,53 +67,56 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Daily Goals</Text>
-          
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Water Goal (Cups)</Text>
-            <TextInput 
-              style={styles.input} 
-              value={waterTotal} 
-              onChangeText={setWaterTotal} 
-              keyboardType="numeric"
-              placeholderTextColor={Colors.pastel.global.text + '80'}
-            />
-          </View>
-          
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Food Goal (Meals)</Text>
-            <TextInput 
-              style={styles.input} 
-              value={foodTotal} 
-              onChangeText={setFoodTotal} 
-              keyboardType="numeric"
-            />
-          </View>
+        <Text style={styles.sectionTitle}>Daily Goals</Text>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Water (Cups)</Text>
+          <TextInput style={styles.input} value={waterTotal} onChangeText={setWaterTotal} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Food (Meals)</Text>
+          <TextInput style={styles.input} value={foodTotal} onChangeText={setFoodTotal} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Workout (Mins)</Text>
+          <TextInput style={styles.input} value={workoutTotal} onChangeText={setWorkoutTotal} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Stretch (Times)</Text>
+          <TextInput style={styles.input} value={stretchTotal} onChangeText={setStretchTotal} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+      </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Workout Goal (Mins)</Text>
-            <TextInput 
-              style={styles.input} 
-              value={workoutTotal} 
-              onChangeText={setWorkoutTotal} 
-              keyboardType="numeric"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Stretch Goal (Times)</Text>
-            <TextInput 
-              style={styles.input} 
-              value={stretchTotal} 
-              onChangeText={setStretchTotal} 
-              keyboardType="numeric"
-            />
-          </View>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Notification Intervals (Hours)</Text>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Water</Text>
+          <TextInput style={styles.input} value={waterInterval} onChangeText={setWaterInterval} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Food</Text>
+          <TextInput style={styles.input} value={foodInterval} onChangeText={setFoodInterval} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Workout</Text>
+          <TextInput style={styles.input} value={workoutInterval} onChangeText={setWorkoutInterval} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Stretch</Text>
+          <TextInput style={styles.input} value={stretchInterval} onChangeText={setStretchInterval} keyboardType="numeric" 
+              placeholderTextColor={Colors.pastel.global.text + '80'}/>
+        </View>
+      </View>
 
           <TouchableOpacity style={styles.button} onPress={saveTotals}>
             <Text style={styles.buttonText}>Save Goals</Text>
           </TouchableOpacity>
-        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Edit History</Text>
