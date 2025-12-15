@@ -4,14 +4,12 @@ import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
-  const { settings, updateTotal, history, editHistory, updateHabit } = useHabits();
+  const { settings, updateTotal, history, editHistory } = useHabits();
   
-  // Local state for totals forms to avoid constant context updates on every keystroke
   const [waterTotal, setWaterTotal] = useState(settings.totals.water.toString());
   const [foodTotal, setFoodTotal] = useState(settings.totals.food.toString());
   const [workoutTotal, setWorkoutTotal] = useState(settings.totals.workout.toString());
 
-  // Data editing state
   const [editDate, setEditDate] = useState(new Date().toISOString().split('T')[0]);
   const [editWater, setEditWater] = useState('');
   const [editFood, setEditFood] = useState('');
@@ -25,7 +23,6 @@ export default function SettingsScreen() {
   };
 
   const loadDataForDate = () => {
-    // Check if valid date YYYY-MM-DD
     const regex = /^\d{4}-\d{2}-\d{2}$/;
     if (!regex.test(editDate)) {
         Alert.alert('Invalid Date', 'Please use YYYY-MM-DD format.');
@@ -61,6 +58,7 @@ export default function SettingsScreen() {
               value={waterTotal} 
               onChangeText={setWaterTotal} 
               keyboardType="numeric"
+              placeholderTextColor={Colors.pastel.global.text + '80'}
             />
           </View>
           
@@ -99,6 +97,7 @@ export default function SettingsScreen() {
                 value={editDate} 
                 onChangeText={setEditDate}
                 placeholder="YYYY-MM-DD"
+                placeholderTextColor={Colors.pastel.global.text + '80'}
             />
             <TouchableOpacity style={styles.smallButton} onPress={loadDataForDate}>
                 <Text style={styles.smallButtonText}>Load</Text>
@@ -113,6 +112,7 @@ export default function SettingsScreen() {
               onChangeText={setEditWater} 
               keyboardType="numeric"
               placeholder="Load date first"
+              placeholderTextColor={Colors.pastel.global.text + '80'}
             />
           </View>
           
@@ -124,6 +124,7 @@ export default function SettingsScreen() {
               onChangeText={setEditFood} 
               keyboardType="numeric"
               placeholder="Load date first"
+              placeholderTextColor={Colors.pastel.global.text + '80'}
             />
           </View>
 
@@ -135,6 +136,7 @@ export default function SettingsScreen() {
               onChangeText={setEditWorkout} 
               keyboardType="numeric"
               placeholder="Load date first"
+              placeholderTextColor={Colors.pastel.global.text + '80'}
             />
           </View>
 
@@ -151,7 +153,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.pastel.global.background,
   },
   scrollContent: {
     padding: 20,
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 40,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'rgba(255,255,255,0.5)', // Transparentish card
     padding: 20,
     borderRadius: 12,
   },
@@ -167,12 +169,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#333',
+    color: Colors.pastel.global.text,
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: Colors.pastel.global.text,
     marginBottom: 15,
+    opacity: 0.8,
   },
   inputGroup: {
     marginBottom: 15,
@@ -180,15 +183,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
-    color: '#555',
+    color: Colors.pastel.global.text,
+    fontWeight: '500',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
+    borderColor: 'transparent',
+    backgroundColor: Colors.pastel.global.inputBackground,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+    color: Colors.pastel.global.text,
   },
   row: {
     flexDirection: 'row',
@@ -199,25 +204,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   button: {
-    backgroundColor:  Colors.pastel.water.dark,
+    backgroundColor:  Colors.pastel.global.accent, // Purple
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: '#FAFAFA', // Light text on purple button
     fontWeight: 'bold',
     fontSize: 16,
   },
   smallButton: {
-    backgroundColor: '#666',
+    backgroundColor: Colors.pastel.workout.dark,
     padding: 12,
     borderRadius: 8,
     justifyContent: 'center',
   },
   smallButtonText: {
-    color: '#fff',
+    color: '#FAFAFA',
     fontWeight: 'bold',
   },
 });

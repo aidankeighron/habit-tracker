@@ -22,7 +22,7 @@ export default function FoodSection() {
   };
 
   return (
-    <View style={[styles.container, isGoalReached && { backgroundColor: theme.accent }]}>
+    <View style={[styles.container, { backgroundColor: isGoalReached ? theme.accent : theme.light }]}>
       <Text style={styles.label}>Food</Text>
       <View style={styles.controls}>
         <TouchableOpacity onPress={handleDecrement} style={styles.button}>
@@ -43,10 +43,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     borderBottomWidth: 1,
-    borderColor: '#eee',
+    borderColor: 'rgba(0,0,0,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   label: {
     fontSize: 24,
@@ -62,16 +61,11 @@ const styles = StyleSheet.create({
   counter: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.pastel.food.dark,
   },
   button: {
     padding: 15,
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(255,255,255,0.4)',
     borderRadius: 50,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
   },
 });

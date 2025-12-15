@@ -32,15 +32,12 @@ export default function StatsScreen() {
       const dates = getPastDaysCoordinates(days);
       
       data = dates.map(date => habitHistory[date] || 0);
-      // Simplify labels to just Day/Month or Day
       labels = dates.map((date, index) => {
-         // Show label for every other day to avoid crowding if 14 days
          if (range === '14days' && index % 2 !== 0) return '';
          const d = new Date(date);
          return `${d.getMonth() + 1}/${d.getDate()}`;
       });
     } else {
-        // Weekly
         const weeks = getPastWeeksCoordinates(7);
         data = weeks.map(weekDates => {
             const sum = weekDates.reduce((acc, date) => acc + (habitHistory[date] || 0), 0);
@@ -59,32 +56,32 @@ export default function StatsScreen() {
     const chartData = getData(type);
     
     return (
-      <View style={styles.chartContainer}>
+      <View style={[styles.chartContainer, { backgroundColor: colorTheme.light }]}>
         <Text style={[styles.chartTitle, { color: colorTheme.dark }]}>{title}</Text>
         <LineChart
           data={chartData}
           width={screenWidth - 40}
           height={220}
           chartConfig={{
-            backgroundColor: '#fff',
-            backgroundGradientFrom: '#fff',
-            backgroundGradientTo: '#fff',
+            backgroundColor: colorTheme.light,
+            backgroundGradientFrom: colorTheme.light,
+            backgroundGradientTo: colorTheme.light,
             decimalPlaces: 1,
-            color: (opacity = 1) => colorTheme.dark, // Using the dark shade for the line
-            labelColor: (opacity = 1) => '#666',
+            color: (opacity = 1) => colorTheme.dark,
+            labelColor: (opacity = 1) => colorTheme.dark,
             style: {
               borderRadius: 16
             },
             propsForDots: {
               r: "4",
               strokeWidth: "2",
-              stroke: colorTheme.light
+              stroke: colorTheme.dark // Changed from light to dark for visibility
             }
           }}
           bezier
           style={styles.chart}
         />
-        <Text style={styles.unitLabel}>{unit}</Text>
+        <Text style={[styles.unitLabel, { color: colorTheme.dark }]}>{unit}</Text>
       </View>
     );
   };
@@ -97,7 +94,7 @@ export default function StatsScreen() {
            <Text style={styles.dropdownText}>
              {ranges.find(r => r.value === range)?.label}
            </Text>
-           <FontAwesome name={showDropdown ? "chevron-up" : "chevron-down"} size={16} color="#333" />
+           <FontAwesome name={showDropdown ? "chevron-up" : "chevron-down"} size={16} color={Colors.pastel.global.text} />
         </TouchableOpacity>
       </View>
       
@@ -112,7 +109,7 @@ export default function StatsScreen() {
                     setShowDropdown(false);
                 }}
             >
-                <Text>{r.label}</Text>
+                <Text style={styles.dropdownItemText}>{r.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -130,7 +127,7 @@ export default function StatsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.pastel.global.background,
   },
   header: {
     flexDirection: 'row',
@@ -138,32 +135,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     zIndex: 2,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.pastel.global.background, // Non-white background
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: Colors.pastel.global.text,
   },
   dropdownBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Colors.pastel.global.text,
     padding: 10,
     borderRadius: 8,
     gap: 10,
+    backgroundColor: Colors.pastel.global.inputBackground,
   },
   dropdownText: {
     fontSize: 14,
+    color: Colors.pastel.global.text,
   },
   dropdownList: {
     position: 'absolute',
     top: 70,
     right: 20,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.pastel.global.inputBackground,
     borderRadius: 8,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: '#2e003e',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     padding: 5,
@@ -173,15 +173,22 @@ const styles = StyleSheet.create({
   dropdownItem: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  dropdownItemText: {
+    color: Colors.pastel.global.text,
   },
   scrollContent: {
     paddingBottom: 20,
     zIndex: 1,
+    paddingHorizontal: 10, // Added padding to avoid charts touching edges
   },
   chartContainer: {
     marginBottom: 30,
     alignItems: 'center',
+    paddingVertical: 20,
+    borderRadius: 16, // Added styling to container
+    // backgroundColor set in renderChart dynamically
   },
   chartTitle: {
     fontSize: 20,
@@ -196,7 +203,6 @@ const styles = StyleSheet.create({
   },
   unitLabel: {
     fontSize: 12,
-    color: '#888',
     alignSelf: 'flex-end',
     marginRight: 20,
   },

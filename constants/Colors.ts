@@ -1,37 +1,47 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+const accentPurple = '#9C27B0';
+const bgPurple = '#F3E5F5';
+const textPurple = '#4A148C';
 
 export const Colors = {
   light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    text: textPurple,
+    background: bgPurple,
+    tint: accentPurple,
+    tabIconDefault: '#BDBDBD',
+    tabIconSelected: accentPurple,
   },
   dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
+    text: '#E1BEE7',
+    background: '#2e003e',
+    tint: '#E040FB',
     tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: '#E040FB',
   },
   pastel: {
+    global: {
+      background: bgPurple,
+      text: textPurple,
+      accent: accentPurple,
+      inputBackground: '#E1BEE7', // Darker lavender for inputs
+    },
     water: {
-      light: '#AECBFA', // Pastel Blue
-      dark: '#1A73E8',  // Darker Blue
-      accent: '#E8F0FE', // Very light blue
+      light: '#E3F2FD', // Very light blue
+      dark: '#0D47A1',  // Very dark blue
+      accent: '#BBDEFB',
+      medium: '#2196F3',
     },
     food: {
-      light: '#A8DAB5', // Pastel Green
-      dark: '#1E8E3E',  // Darker Green
-      accent: '#E6F4EA',
+      light: '#E8F5E9', // Very light green
+      dark: '#1B5E20',  // Very dark green
+      accent: '#C8E6C9',
+      medium: '#4CAF50',
     },
     workout: {
-      light: '#E0E0E0', // Pastel Grey
-      dark: '#5F6368',  // Darker Grey
-      accent: '#F1F3F4',
+      light: '#FAFAFA', // Very light grey (almost white but warm) -> Let's go slightly darker grey to distinguish from white
+      dark: '#212121',  // Very dark grey
+      accent: '#F5F5F5',
+      medium: '#9E9E9E',
+      inputBg: '#EEEEEE',
     },
-    background: '#ffffff',
   }
 };

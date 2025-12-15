@@ -21,12 +21,13 @@ export default function WorkoutSection() {
   };
 
   return (
-    <View style={[styles.container, isGoalReached && { backgroundColor: theme.accent }]}>
+    <View style={[styles.container, { backgroundColor: isGoalReached ? theme.accent : theme.light }]}>
       <Text style={styles.label}>Workout</Text>
       <View style={styles.controls}>
         <TextInput 
           style={styles.input}
           placeholder="Min"
+          placeholderTextColor={theme.medium}
           keyboardType="number-pad"
           value={inputVal}
           onChangeText={setInputVal}
@@ -47,7 +48,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   label: {
     fontSize: 24,
@@ -63,18 +63,19 @@ const styles = StyleSheet.create({
   counter: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.pastel.workout.dark,
     marginLeft: 10,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: 'transparent',
     borderRadius: 8,
     padding: 10,
     width: 80,
     fontSize: 18,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.pastel.workout.inputBg,
     textAlign: 'center',
+    color: Colors.pastel.workout.dark,
   },
   button: {
     paddingVertical: 10,
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    color: '#fff',
+    color: '#FAFAFA', // Using light grey instead of pure white
     fontWeight: 'bold',
     fontSize: 16,
   },
