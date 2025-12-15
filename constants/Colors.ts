@@ -46,5 +46,11 @@ export const Colors = {
       inputBg: '#F5F5F5', // Making input slightly lighter than bg for contrast
       accent: '#BDBDBD',
     },
+    stretch: {
+      light: '#FFF3E0',
+      dark: '#E65100',
+      medium: '#FF9800',
+      accent: '#FFE0B2',
+    },
   }
 };

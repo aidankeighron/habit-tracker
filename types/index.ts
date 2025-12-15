@@ -1,9 +1,10 @@
-export type HabitType = 'water' | 'food' | 'workout';
+export type HabitType = 'water' | 'food' | 'workout' | 'stretch';
 
 export interface DailyHabitData {
   water: number;
   food: number;
   workout: number;
+  stretch: number;
 }
 
 export interface HabitHistory {
@@ -15,6 +16,7 @@ export interface HabitSettings {
     water: number;
     food: number;
     workout: number;
+    stretch: number;
   };
 }
 
@@ -24,6 +26,7 @@ export interface HabitContextType {
     water: HabitHistory;
     food: HabitHistory;
     workout: HabitHistory;
+    stretch: HabitHistory;
   };
   settings: HabitSettings;
   updateHabit: (type: HabitType, value: number) => void;

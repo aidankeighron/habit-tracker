@@ -10,16 +10,19 @@ export default function SettingsScreen() {
   const [waterTotal, setWaterTotal] = useState(settings.totals.water.toString());
   const [foodTotal, setFoodTotal] = useState(settings.totals.food.toString());
   const [workoutTotal, setWorkoutTotal] = useState(settings.totals.workout.toString());
+  const [stretchTotal, setStretchTotal] = useState(settings.totals.stretch.toString());
 
   const [editDate, setEditDate] = useState(new Date().toISOString().split('T')[0]);
   const [editWater, setEditWater] = useState('');
   const [editFood, setEditFood] = useState('');
   const [editWorkout, setEditWorkout] = useState('');
+  const [editStretch, setEditStretch] = useState('');
 
   const saveTotals = () => {
     updateTotal('water', parseFloat(waterTotal) || 0);
     updateTotal('food', parseFloat(foodTotal) || 0);
     updateTotal('workout', parseFloat(workoutTotal) || 0);
+    updateTotal('stretch', parseFloat(stretchTotal) || 0);
     Alert.alert('Success', 'Goals updated successfully.');
   };
 
@@ -33,12 +36,14 @@ export default function SettingsScreen() {
     setEditWater((history.water[editDate] || 0).toString());
     setEditFood((history.food[editDate] || 0).toString());
     setEditWorkout((history.workout[editDate] || 0).toString());
+    setEditStretch((history.stretch[editDate] || 0).toString());
   };
 
   const saveHistoryData = () => {
     editHistory('water', editDate, parseFloat(editWater) || 0);
     editHistory('food', editDate, parseFloat(editFood) || 0);
     editHistory('workout', editDate, parseFloat(editWorkout) || 0);
+    editHistory('stretch', editDate, parseFloat(editStretch) || 0);
     Alert.alert('Success', `Data for ${editDate} updated.`);
   };
 
@@ -80,6 +85,16 @@ export default function SettingsScreen() {
               style={styles.input} 
               value={workoutTotal} 
               onChangeText={setWorkoutTotal} 
+              keyboardType="numeric"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Stretch Goal (Times)</Text>
+            <TextInput 
+              style={styles.input} 
+              value={stretchTotal} 
+              onChangeText={setStretchTotal} 
               keyboardType="numeric"
             />
           </View>
@@ -136,6 +151,18 @@ export default function SettingsScreen() {
               style={styles.input} 
               value={editWorkout} 
               onChangeText={setEditWorkout} 
+              keyboardType="numeric"
+              placeholder="Load date first"
+              placeholderTextColor={Colors.pastel.global.text + '80'}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Stretch</Text>
+            <TextInput 
+              style={styles.input} 
+              value={editStretch} 
+              onChangeText={setEditStretch} 
               keyboardType="numeric"
               placeholder="Load date first"
               placeholderTextColor={Colors.pastel.global.text + '80'}

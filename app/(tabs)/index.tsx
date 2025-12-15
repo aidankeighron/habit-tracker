@@ -1,4 +1,5 @@
 import FoodSection from '@/components/FoodSection';
+import StretchSection from '@/components/StretchSection';
 import WaterSection from '@/components/WaterSection';
 import WorkoutSection from '@/components/WorkoutSection';
 import { Colors } from '@/constants/Colors';
@@ -11,6 +12,7 @@ export default function HomeScreen() {
     <SafeAreaView style={[styles.container, { paddingTop: 10 }]} edges={['top']}>
       <WaterSection />
       <FoodSection />
+      <StretchSection />
       <WorkoutSection />
     </SafeAreaView>
   );

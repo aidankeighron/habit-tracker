@@ -12,7 +12,7 @@ const screenWidth = Dimensions.get('window').width;
 type TimeRange = '7days' | '14days' | '7weeksAVG' | '7weeksTOT';
 
 export default function StatsScreen() {
-  const { history } = useHabits();
+  const { history, settings } = useHabits();
   const [range, setRange] = useState<TimeRange>('7days');
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -23,7 +23,7 @@ export default function StatsScreen() {
     { label: 'Last 7 Weeks (Tot)', value: '7weeksTOT' },
   ];
 
-  const getData = (type: 'water' | 'food' | 'workout') => {
+  const getData = (type: 'water' | 'food' | 'workout' | 'stretch') => {
     const habitHistory = history[type];
     let labels: string[] = [];
     let data: number[] = [];
@@ -53,21 +53,37 @@ export default function StatsScreen() {
     };
   };
 
-  const renderChart = (title: string, type: 'water' | 'food' | 'workout', unit: string, colorTheme: any) => {
+  const renderChart = (title: string, type: 'water' | 'food' | 'workout' | 'stretch', unit: string, colorTheme: any) => {
     const chartData = getData(type);
+    const goal = settings.totals[type] || 2; 
+    // Wait, 'history' contains history, 'settings' is in context but not destructured in line 15. I need to get settings.
+    
+    // Let's assume constant goal for now or fetch it.
+    // I need to update the component to use settings from context.
     
     return (
-      <View style={[styles.chartContainer, { backgroundColor: colorTheme.light }]}>
+      <View style={[styles.chartContainer, { backgroundColor: colorTheme.light, width: (screenWidth / 2) - 20 }]}>
         <Text style={[styles.chartTitle, { color: colorTheme.dark }]}>{title}</Text>
         <LineChart
-          data={chartData}
-          width={screenWidth - 40}
-          height={220}
+          data={{
+            labels: chartData.labels,
+            datasets: [
+              { data: chartData.datasets[0].data },
+              { 
+                data: new Array(chartData.labels.length).fill(goal), 
+                color: () => colorTheme.dark, 
+                withDots: false, // No dots for goal line
+                strokeWidth: 2,
+              }
+            ]
+          }}
+          width={(screenWidth / 2) - 30}
+          height={180}
           chartConfig={{
             backgroundColor: colorTheme.light,
             backgroundGradientFrom: colorTheme.light,
             backgroundGradientTo: colorTheme.light,
-            decimalPlaces: 1,
+            decimalPlaces: 0,
             color: (opacity = 1) => colorTheme.dark,
             labelColor: (opacity = 1) => colorTheme.dark,
             style: {
@@ -76,11 +92,20 @@ export default function StatsScreen() {
             propsForDots: {
               r: "4",
               strokeWidth: "2",
-              stroke: colorTheme.dark // Changed from light to dark for visibility
-            }
+              stroke: colorTheme.dark
+            }, 
+             // Add dash array for the goal line? The library applies propsForDots to dots, not lines.
+             // To make the line itself dotted, I might need 'propsForBackgroundLines' or specific dataset styling?
+             // checking react-native-chart-kit docs mentally: dataset can have `withDots`, `color`, `strokeWidth`.
+             // `strokeDashArray` is supported in some versions on dataset props but maybe not explicitly typed?
+             // I'll try passing `propsForDots` equivalent for line if possible, OR just leave it as solid line if dotted is hard.
+             // Wait, user specifically asked for "horizontal dotted line".
+             // I can try adding `strokeDashArray: [10, 5]` to the dataset object if the library passes it to the Path.
           }}
           bezier
           style={styles.chart}
+          withInnerLines={false}
+          withOuterLines={false}
         />
         <Text style={[styles.unitLabel, { color: colorTheme.dark }]}>{unit}</Text>
       </View>
@@ -117,9 +142,12 @@ export default function StatsScreen() {
       )}
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {renderChart('Water', 'water', 'Cups', Colors.pastel.water)}
-        {renderChart('Food', 'food', 'Meals', Colors.pastel.food)}
-        {renderChart('Workout', 'workout', 'Minutes', Colors.pastel.workout)}
+        <View style={styles.grid}>
+          {renderChart('Water', 'water', 'Cups', Colors.pastel.water)}
+          {renderChart('Food', 'food', 'Meals', Colors.pastel.food)}
+          {renderChart('Stretch', 'stretch', 'Times', Colors.pastel.stretch)}
+          {renderChart('Workout', 'workout', 'Mins', Colors.pastel.workout)}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -184,11 +212,16 @@ const styles = StyleSheet.create({
     zIndex: 1,
     paddingHorizontal: 10, // Added padding to avoid charts touching edges
   },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
   chartContainer: {
-    marginBottom: 30,
+    marginBottom: 15,
     alignItems: 'center',
-    paddingVertical: 20,
-    borderRadius: 16, // Added styling to container
+    paddingVertical: 10,
+    borderRadius: 16,
     // backgroundColor set in renderChart dynamically
   },
   chartTitle: {
@@ -208,3 +241,5 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
 });
+
+

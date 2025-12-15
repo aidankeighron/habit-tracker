@@ -8,6 +8,7 @@ const KEYS = {
   WATER: 'water_history',
   FOOD: 'food_history',
   WORKOUT: 'workout_history',
+  STRETCH: 'stretch_history',
   SETTINGS: 'habit_settings',
 };
 
@@ -16,14 +17,16 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     water: HabitHistory;
     food: HabitHistory;
     workout: HabitHistory;
+    stretch: HabitHistory;
   }>({
     water: {},
     food: {},
     workout: {},
+    stretch: {},
   });
 
   const [settings, setSettings] = useState<HabitSettings>({
-    totals: { water: 8, food: 3, workout: 30 },
+    totals: { water: 8, food: 3, workout: 30, stretch: 2 },
   });
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
@@ -34,10 +37,11 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const loadData = async () => {
     try {
-      const [water, food, workout, storedSettings] = await Promise.all([
+      const [water, food, workout, stretch, storedSettings] = await Promise.all([
         AsyncStorage.getItem(KEYS.WATER),
         AsyncStorage.getItem(KEYS.FOOD),
         AsyncStorage.getItem(KEYS.WORKOUT),
+        AsyncStorage.getItem(KEYS.STRETCH),
         AsyncStorage.getItem(KEYS.SETTINGS),
       ]);
 
@@ -45,6 +49,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         water: water ? JSON.parse(water) : {},
         food: food ? JSON.parse(food) : {},
         workout: workout ? JSON.parse(workout) : {},
+        stretch: stretch ? JSON.parse(stretch) : {},
       });
 
       if (storedSettings) {
@@ -78,6 +83,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let key = KEYS.WATER;
     if (type === 'food') key = KEYS.FOOD;
     if (type === 'workout') key = KEYS.WORKOUT;
+    if (type === 'stretch') key = KEYS.STRETCH;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
   };
@@ -90,6 +96,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let key = KEYS.WATER;
     if (type === 'food') key = KEYS.FOOD;
     if (type === 'workout') key = KEYS.WORKOUT;
+    if (type === 'stretch') key = KEYS.STRETCH;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
   };
@@ -106,6 +113,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     water: history.water[today] || 0,
     food: history.food[today] || 0,
     workout: history.workout[today] || 0,
+    stretch: history.stretch[today] || 0,
   };
 
   return (
