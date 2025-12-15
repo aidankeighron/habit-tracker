@@ -5,6 +5,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import React, { useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -87,7 +88,7 @@ export default function StatsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: 10 }]} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Statistics</Text>
         <TouchableOpacity style={styles.dropdownBtn} onPress={() => setShowDropdown(!showDropdown)}>
@@ -120,7 +121,7 @@ export default function StatsScreen() {
         {renderChart('Food', 'food', 'Meals', Colors.pastel.food)}
         {renderChart('Workout', 'workout', 'Minutes', Colors.pastel.workout)}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

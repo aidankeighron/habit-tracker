@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { paddingTop: 10 }]} edges={['top']}>
       <WaterSection />
       <FoodSection />
       <WorkoutSection />

@@ -23,13 +23,13 @@ export default function WaterSection() {
 
   return (
     <View style={[styles.container, { backgroundColor: isGoalReached ? theme.accent : theme.light }]}>
-      <Text style={styles.label}>Water</Text>
+      <Text style={[styles.label, isGoalReached && { color: theme.dark }]}>Water</Text>
       <View style={styles.controls}>
         <TouchableOpacity onPress={handleDecrement} style={styles.button}>
           <FontAwesome name="minus" size={24} color={theme.dark} />
         </TouchableOpacity>
         
-        <Text style={styles.counter}>{current} / {total}</Text>
+        <Text style={[styles.counter, isGoalReached && { color: theme.dark }]}>{current} / {total}</Text>
         
         <TouchableOpacity onPress={handleIncrement} style={styles.button}>
           <FontAwesome name="plus" size={24} color={theme.dark} />
@@ -43,10 +43,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     borderBottomWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)', // Softer border
+    borderColor: 'rgba(0,0,0,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor set dynamically
   },
   label: {
     fontSize: 24,
@@ -66,7 +65,7 @@ const styles = StyleSheet.create({
   },
   button: {
     padding: 15,
-    backgroundColor: 'rgba(255,255,255,0.4)', // Semi transparent
+    backgroundColor: 'rgba(255,255,255,0.4)',
     borderRadius: 50,
   },
 });

@@ -2,6 +2,7 @@ import { Colors } from '@/constants/Colors';
 import { useHabits } from '@/context/HabitContext';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
   const { settings, updateTotal, history, editHistory } = useHabits();
@@ -44,8 +45,9 @@ export default function SettingsScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+      style={{ flex: 1 }}
     >
+      <SafeAreaView style={[styles.container, { paddingTop: 10 }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
         <View style={styles.section}>
@@ -146,6 +148,7 @@ export default function SettingsScreen() {
         </View>
 
       </ScrollView>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 }

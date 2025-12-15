@@ -22,7 +22,7 @@ export default function WorkoutSection() {
 
   return (
     <View style={[styles.container, { backgroundColor: isGoalReached ? theme.accent : theme.light }]}>
-      <Text style={styles.label}>Workout</Text>
+      <Text style={[styles.label, isGoalReached && { color: theme.dark }]}>Workout</Text>
       <View style={styles.controls}>
         <TextInput 
           style={styles.input}
@@ -37,7 +37,7 @@ export default function WorkoutSection() {
           <Text style={styles.buttonText}>Set</Text>
         </TouchableOpacity>
 
-        <Text style={styles.counter}>{current} / {total}</Text>
+        <Text style={[styles.counter, isGoalReached && { color: theme.dark }]}>{current} / {total}</Text>
       </View>
     </View>
   );
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    color: '#FAFAFA', // Using light grey instead of pure white
+    color: '#FAFAFA',
     fontWeight: 'bold',
     fontSize: 16,
   },

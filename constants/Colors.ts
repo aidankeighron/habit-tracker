@@ -6,9 +6,10 @@ export const Colors = {
   light: {
     text: textPurple,
     background: bgPurple,
-    tint: accentPurple,
-    tabIconDefault: '#BDBDBD',
-    tabIconSelected: accentPurple,
+    tint: textPurple, // Dark purple for active tint
+    tabIconDefault: '#CE93D8', // Lighter purple for inactive
+    tabIconSelected: textPurple,
+    tabBarBackground: '#E1BEE7', // Light purple background
   },
   dark: {
     text: '#E1BEE7',
@@ -16,32 +17,34 @@ export const Colors = {
     tint: '#E040FB',
     tabIconDefault: '#ccc',
     tabIconSelected: '#E040FB',
+    tabBarBackground: '#120021',
   },
   pastel: {
     global: {
       background: bgPurple,
       text: textPurple,
       accent: accentPurple,
-      inputBackground: '#E1BEE7', // Darker lavender for inputs
+      inputBackground: '#E1BEE7', 
     },
     water: {
-      light: '#E3F2FD', // Very light blue
-      dark: '#0D47A1',  // Very dark blue
-      accent: '#BBDEFB',
+      light: '#E3F2FD', 
+      dark: '#0D47A1',  
       medium: '#2196F3',
+      completed: '#42A5F5',
+      accent: '#90CAF9',
     },
     food: {
-      light: '#E8F5E9', // Very light green
-      dark: '#1B5E20',  // Very dark green
-      accent: '#C8E6C9',
+      light: '#E8F5E9',
+      dark: '#1B5E20',
       medium: '#4CAF50',
+      accent: '#A5D6A7', 
     },
     workout: {
-      light: '#FAFAFA', // Very light grey (almost white but warm) -> Let's go slightly darker grey to distinguish from white
-      dark: '#212121',  // Very dark grey
-      accent: '#F5F5F5',
+      light: '#FAFAFA', 
+      dark: '#212121', 
       medium: '#9E9E9E',
       inputBg: '#EEEEEE',
+      accent: '#BDBDBD',
     },
   }
 };

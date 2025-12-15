@@ -23,13 +23,13 @@ export default function FoodSection() {
 
   return (
     <View style={[styles.container, { backgroundColor: isGoalReached ? theme.accent : theme.light }]}>
-      <Text style={styles.label}>Food</Text>
+      <Text style={[styles.label, isGoalReached && { color: theme.dark }]}>Food</Text>
       <View style={styles.controls}>
         <TouchableOpacity onPress={handleDecrement} style={styles.button}>
           <FontAwesome name="minus" size={24} color={theme.dark} />
         </TouchableOpacity>
         
-        <Text style={styles.counter}>{current} / {total}</Text>
+        <Text style={[styles.counter, isGoalReached && { color: theme.dark }]}>{current} / {total}</Text>
         
         <TouchableOpacity onPress={handleIncrement} style={styles.button}>
           <FontAwesome name="plus" size={24} color={theme.dark} />
