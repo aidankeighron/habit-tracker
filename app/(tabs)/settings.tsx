@@ -29,24 +29,27 @@ export default function SettingsScreen() {
   const [editStretch, setEditStretch] = useState('');
   const [editRacing, setEditRacing] = useState('');
 
-  const saveTotals = () => {
+  const saveGoals = () => {
     updateTotal('water', parseFloat(waterTotal) || 0);
     updateTotal('food', parseFloat(foodTotal) || 0);
     updateTotal('workout', parseFloat(workoutTotal) || 0);
     updateTotal('stretch', parseFloat(stretchTotal) || 0);
     updateTotal('racing', parseFloat(racingTotal) || 0);
-    
-    // Save Notification Intervals
+    Alert.alert('Success', 'Daily Goals updated successfully.');
+  };
+
+  const saveNotifications = () => {
     updateNotificationInterval('water', parseFloat(waterInterval) || 0);
     updateNotificationInterval('food', parseFloat(foodInterval) || 0);
     updateNotificationInterval('workout', parseFloat(workoutInterval) || 0);
     updateNotificationInterval('stretch', parseFloat(stretchInterval) || 0);
-    updateNotificationInterval('racing', parseFloat(racingInterval) || -1); // Default to -1 if invalid, though logic might handle it
-    
-    // Save Rollover Hour
-    updateRolloverHour(parseInt(rolloverHour) || 0);
+    updateNotificationInterval('racing', parseFloat(racingInterval) || -1);
+    Alert.alert('Success', 'Notification Intervals updated successfully.');
+  };
 
-    Alert.alert('Success', 'Goals updated successfully.');
+  const saveRollover = () => {
+    updateRolloverHour(parseInt(rolloverHour) || 0);
+    Alert.alert('Success', 'Rollover Time updated successfully.');
   };
 
   const loadDataForDate = () => {
@@ -107,6 +110,10 @@ export default function SettingsScreen() {
           <TextInput style={styles.input} value={racingTotal} onChangeText={setRacingTotal} keyboardType="numeric" 
               placeholderTextColor={Colors.pastel.global.text + '80'}/>
         </View>
+
+        <TouchableOpacity style={styles.button} onPress={saveGoals}>
+            <Text style={styles.buttonText}>Save Goals</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
@@ -136,6 +143,10 @@ export default function SettingsScreen() {
           <TextInput style={styles.input} value={racingInterval} onChangeText={setRacingInterval} keyboardType="numeric" 
               placeholderTextColor={Colors.pastel.global.text + '80'}/>
         </View>
+
+        <TouchableOpacity style={styles.button} onPress={saveNotifications}>
+            <Text style={styles.buttonText}>Save Intervals</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
@@ -146,11 +157,11 @@ export default function SettingsScreen() {
           <TextInput style={styles.input} value={rolloverHour} onChangeText={setRolloverHour} keyboardType="numeric" 
               placeholderTextColor={Colors.pastel.global.text + '80'}/>
         </View>
-      </View>
 
-          <TouchableOpacity style={styles.button} onPress={saveTotals}>
-            <Text style={styles.buttonText}>Save Goals</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={saveRollover}>
+            <Text style={styles.buttonText}>Save Rollover</Text>
+        </TouchableOpacity>
+      </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Edit History</Text>
