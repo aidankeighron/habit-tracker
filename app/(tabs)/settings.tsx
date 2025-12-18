@@ -6,7 +6,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, Te
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
-  const { settings, updateTotal, history, editHistory, updateNotificationInterval, updateRolloverHour } = useHabits();
+  const { settings, updateHabitTotals, history, updateDailyHistory, updateNotificationIntervals, updateRolloverHour } = useHabits();
   
   const [waterTotal, setWaterTotal] = useState(settings.totals.water.toString());
   const [foodTotal, setFoodTotal] = useState(settings.totals.food.toString());
@@ -30,20 +30,24 @@ export default function SettingsScreen() {
   const [editRacing, setEditRacing] = useState('');
 
   const saveGoals = () => {
-    updateTotal('water', parseFloat(waterTotal) || 0);
-    updateTotal('food', parseFloat(foodTotal) || 0);
-    updateTotal('workout', parseFloat(workoutTotal) || 0);
-    updateTotal('stretch', parseFloat(stretchTotal) || 0);
-    updateTotal('racing', parseFloat(racingTotal) || 0);
+    updateHabitTotals({
+        water: parseFloat(waterTotal) || 0,
+        food: parseFloat(foodTotal) || 0,
+        workout: parseFloat(workoutTotal) || 0,
+        stretch: parseFloat(stretchTotal) || 0,
+        racing: parseFloat(racingTotal) || 0,
+    });
     Alert.alert('Success', 'Daily Goals updated successfully.');
   };
 
   const saveNotifications = () => {
-    updateNotificationInterval('water', parseFloat(waterInterval) || 0);
-    updateNotificationInterval('food', parseFloat(foodInterval) || 0);
-    updateNotificationInterval('workout', parseFloat(workoutInterval) || 0);
-    updateNotificationInterval('stretch', parseFloat(stretchInterval) || 0);
-    updateNotificationInterval('racing', parseFloat(racingInterval) || -1);
+    updateNotificationIntervals({
+        water: parseFloat(waterInterval) || 0,
+        food: parseFloat(foodInterval) || 0,
+        workout: parseFloat(workoutInterval) || 0,
+        stretch: parseFloat(stretchInterval) || 0,
+        racing: parseFloat(racingInterval) || -1,
+    });
     Alert.alert('Success', 'Notification Intervals updated successfully.');
   };
 
@@ -67,11 +71,13 @@ export default function SettingsScreen() {
   };
 
   const saveHistoryData = () => {
-    editHistory('water', editDate, parseFloat(editWater) || 0);
-    editHistory('food', editDate, parseFloat(editFood) || 0);
-    editHistory('workout', editDate, parseFloat(editWorkout) || 0);
-    editHistory('stretch', editDate, parseFloat(editStretch) || 0);
-    editHistory('racing', editDate, parseFloat(editRacing) || 0);
+    updateDailyHistory(editDate, {
+        water: parseFloat(editWater) || 0,
+        food: parseFloat(editFood) || 0,
+        workout: parseFloat(editWorkout) || 0,
+        stretch: parseFloat(editStretch) || 0,
+        racing: parseFloat(editRacing) || 0,
+    });
     Alert.alert('Success', `Data for ${editDate} updated.`);
   };
 

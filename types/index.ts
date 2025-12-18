@@ -50,7 +50,10 @@ export interface HabitContextType {
   today: string;
   updateHabit: (type: HabitType, value: number) => void;
   updateTotal: (type: HabitType, total: number) => void;
+  updateHabitTotals: (totals: HabitSettings['totals']) => void;
   updateNotificationInterval: (type: HabitType, hours: number) => void;
+  updateNotificationIntervals: (intervals: HabitSettings['notifications']) => void;
   editHistory: (type: HabitType, date: string, value: number) => void;
+  updateDailyHistory: (date: string, values: DailyHabitData) => void;
   updateRolloverHour: (hour: number) => void;
 }

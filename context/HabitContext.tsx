@@ -251,9 +251,37 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
   };
 
+  const updateDailyHistory = async (date: string, values: DailyHabitData) => {
+    const newHistory = { ...history };
+    
+    // Update state for all keys first
+    newHistory.water = { ...newHistory.water, [date]: values.water };
+    newHistory.food = { ...newHistory.food, [date]: values.food };
+    newHistory.workout = { ...newHistory.workout, [date]: values.workout };
+    newHistory.stretch = { ...newHistory.stretch, [date]: values.stretch };
+    newHistory.racing = { ...newHistory.racing, [date]: values.racing };
+    
+    setHistory(newHistory);
+    
+    // Save all to async storage in parallel, keys are distinct so no race condition actually
+    await Promise.all([
+        AsyncStorage.setItem(KEYS.WATER, JSON.stringify(newHistory.water)),
+        AsyncStorage.setItem(KEYS.FOOD, JSON.stringify(newHistory.food)),
+        AsyncStorage.setItem(KEYS.WORKOUT, JSON.stringify(newHistory.workout)),
+        AsyncStorage.setItem(KEYS.STRETCH, JSON.stringify(newHistory.stretch)),
+        AsyncStorage.setItem(KEYS.RACING, JSON.stringify(newHistory.racing)),
+    ]);
+  };
+
   const updateTotal = async (type: HabitType, total: number) => {
     const newSettings = { ...settings };
     newSettings.totals[type] = total;
+    setSettings(newSettings);
+    await AsyncStorage.setItem(KEYS.SETTINGS, JSON.stringify(newSettings));
+  };
+  
+  const updateHabitTotals = async (totals: HabitSettings['totals']) => {
+    const newSettings = { ...settings, totals: { ...settings.totals, ...totals } };
     setSettings(newSettings);
     await AsyncStorage.setItem(KEYS.SETTINGS, JSON.stringify(newSettings));
   };
@@ -267,6 +295,19 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Reschedule immediate
     if (lastUpdated[type]) {
         scheduleReminderForType(type, lastUpdated[type]!, hours);
+    }
+  };
+
+  const updateNotificationIntervals = async (intervals: HabitSettings['notifications']) => {
+    const newSettings = { ...settings, notifications: { ...settings.notifications, ...intervals } };
+    setSettings(newSettings);
+    await AsyncStorage.setItem(KEYS.SETTINGS, JSON.stringify(newSettings));
+    
+    // Reschedule all
+    for (const type of Object.keys(intervals) as HabitType[]) {
+        if (lastUpdated[type]) {
+             scheduleReminderForType(type, lastUpdated[type]!, intervals[type]);
+        }
     }
   };
 
@@ -292,7 +333,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, editHistory, updateNotificationInterval, updateRolloverHour } as any}>
+    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, updateHabitTotals, editHistory, updateDailyHistory, updateNotificationInterval, updateNotificationIntervals, updateRolloverHour } as any}>
       {children}
     </HabitContext.Provider>
   );
