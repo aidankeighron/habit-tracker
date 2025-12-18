@@ -1,5 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { useHabits } from '@/context/HabitContext';
+import { getLocalYYYYMMDD } from '@/utils/dateUtils';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,7 +22,7 @@ export default function SettingsScreen() {
 
   const [rolloverHour, setRolloverHour] = useState(settings.rolloverHour.toString());
 
-  const [editDate, setEditDate] = useState(new Date().toISOString().split('T')[0]);
+  const [editDate, setEditDate] = useState(getLocalYYYYMMDD(new Date()));
   const [editWater, setEditWater] = useState('');
   const [editFood, setEditFood] = useState('');
   const [editWorkout, setEditWorkout] = useState('');

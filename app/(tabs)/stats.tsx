@@ -35,8 +35,8 @@ export default function StatsScreen() {
       data = dates.map(date => habitHistory[date] || 0);
       labels = dates.map((date, index) => {
          if (range === '14days' && index % 2 !== 0) return '';
-         const d = new Date(date);
-         return `${d.getMonth() + 1}/${d.getDate()}`;
+         const [year, month, day] = date.split('-').map(Number);
+         return `${month}/${day}`;
       });
     } else {
         const weeks = getPastWeeksCoordinates(7, today);

@@ -30,7 +30,7 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    setMockDate(new Date(2025, 11, 5, 11, 0, 0));
+    setMockDate(new Date(2025, 11, 8, 4, 30, 0));
   })
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.

@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
+import { getLocalYYYYMMDD } from '../utils/dateUtils';
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
 
@@ -11,7 +12,7 @@ const getEffectiveDate = (rolloverHour: number = 0) => {
   if (now.getHours() < rolloverHour) {
     now.setDate(now.getDate() - 1);
   }
-  return now.toISOString().split('T')[0];
+  return getLocalYYYYMMDD(now);
 };
 
 const KEYS = {
