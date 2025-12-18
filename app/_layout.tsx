@@ -8,7 +8,6 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { HabitProvider } from '@/context/HabitContext';
-import { setMockDate } from '@/utils/timeTravel';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -29,9 +28,9 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  useEffect(() => {
-    setMockDate(new Date(2025, 11, 8, 4, 30, 0));
-  })
+  // useEffect(() => {
+  //   setMockDate(new Date(2025, 11, 8, 4, 30, 0));
+  // })
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
