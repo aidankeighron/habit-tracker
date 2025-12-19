@@ -21,13 +21,22 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
     );
   };
 
-  const getDaysString = (days: number[]) => {
-    if (days.length === 7) return "Every day";
-    if (days.length === 0) return "Never";
+  const getDaysString = (n: CustomNotification) => {
+    if (n.repeatType === 'iteration') {
+        const iter = n.iterationFrequencyDays ?? 2;
+        return `Every ${iter} day${iter > 1 ? 's' : ''}`;
+    }
+
+    // Week mode
+    const freq = n.repeatFrequencyWeeks ?? 1;
+    const freqString = freq > 1 ? ` (Every ${freq} weeks)` : '';
+    
+    if (n.days.length === 7) return "Every day" + freqString;
+    if (n.days.length === 0) return "Never";
     
     // S M T W T F S
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return days.map(d => dayNames[d]).join(', ');
+    return n.days.map(d => dayNames[d]).join(', ') + freqString;
   };
 
   const formatTime = (isoString: string) => {
@@ -40,7 +49,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
       <View style={styles.content}>
         <Text style={styles.title}>{notification.title || 'Untitled Check-in'}</Text>
         <Text style={styles.time}>{formatTime(notification.time)}</Text>
-        <Text style={styles.days}>{getDaysString(notification.days)}</Text>
+        <Text style={styles.days}>{getDaysString(notification)}</Text>
       </View>
       <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
         <FontAwesome name="trash" size={20} color={Colors.pastel.global.text} style={{ opacity: 0.5 }} />

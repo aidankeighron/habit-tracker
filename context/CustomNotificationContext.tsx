@@ -8,8 +8,13 @@ export interface CustomNotification {
   id: string;
   title: string;
   time: string; // ISO string for the time
-  days: number[]; // 0-6, Sunday is 0
+  startDates: string; // ISO string (new Date().toISOString()) representing when this was created/started
+  days: number[]; // 0-6, Sunday is 0. Used when repeatType is 'week'
   colorHue: number; // 0-360
+  
+  repeatType: 'week' | 'iteration';
+  repeatFrequencyWeeks?: number; // Used if repeatType === 'week', default 1
+  iterationFrequencyDays?: number; // Used if repeatType === 'iteration', default 2
 }
 
 interface CustomNotificationContextType {
@@ -100,7 +105,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
     for (const notification of scheduled) {
         const nid = notification.content.data?.customNotificationId;
         // Only touch our custom ones
-        if (nid && !currentIds.has(nid)) {
+        if (nid && !currentIds.has(nid as string)) {
              await Notifications.cancelScheduledNotificationAsync(notification.identifier);
         }
     }
@@ -110,29 +115,102 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
     // Expo allows replacing existing notification with same identifier, so we can just fire away.
     
     const today = new Date();
+    // Reset today to midnight for date calculations
+    const todayMidnight = new Date(today);
+    todayMidnight.setHours(0, 0, 0, 0);
     
     for (const n of currentNotifications) {
         const notifTime = new Date(n.time);
         const hour = notifTime.getHours();
         const minute = notifTime.getMinutes();
+        
+        // Default start date to now if missing (migration)
+        const startDate = n.startDates ? new Date(n.startDates) : new Date();
+        const startMidnight = new Date(startDate);
+        startMidnight.setHours(0, 0, 0, 0);
+
+        // Normalize defaults
+        const rType = n.repeatType || 'week';
+        const freqWeeks = n.repeatFrequencyWeeks || 1;
+        const iterDays = n.iterationFrequencyDays || 2;
 
         for (let i = 0; i < 30; i++) {
             const targetDate = new Date(today);
             targetDate.setDate(today.getDate() + i);
-            targetDate.setHours(hour, minute, 0, 0);
+            const targetMidnight = new Date(targetDate);
+            targetMidnight.setHours(0, 0, 0, 0);
 
             // If target date is in the past (e.g. earlier today), skip
-            if (targetDate.getTime() < Date.now()) {
+            // We'll set the specific notification time on targetDate to check
+            const targetDateTime = new Date(targetDate);
+            targetDateTime.setHours(hour, minute, 0, 0);
+            
+            if (targetDateTime.getTime() < Date.now()) {
                 continue;
             }
 
-            if (n.days.includes(targetDate.getDay())) {
+            let shouldSchedule = false;
+
+            if (rType === 'iteration') {
+                // Iteration logic: (target - start) % frequency == 0
+                const diffTime = targetMidnight.getTime() - startMidnight.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                // If diffDays is negative (target before start), shouldn't happen with correct startDate logic but good to check
+                if (diffDays >= 0 && diffDays % iterDays === 0) {
+                    shouldSchedule = true;
+                }
+
+            } else {
+                // Week logic
+                // Check if day of week matches
+                if (n.days.includes(targetDate.getDay())) {
+                    // Check week frequency
+                    // Calculate weeks since start
+                    // We need to align 'weeks' correctly.
+                    // Simple approach: diff in days from start / 7.
+                    // But we actually want "calendar weeks" usually? 
+                    // Requirement: "Next iteration should always happen and then it will start skipping weeks."
+                    // Implies: If this week is active, next week (if freq=2) is skipped.
+                    // Let's use difference in full weeks from start date Sunday-based or just pure 7-day chunks.
+                    // User said: "next iteration should always happen" - likely means from creation.
+                    
+                    // Let's rely on Sunday as start of week for simplicity or just align with startDate's week.
+                    // Let's align with startDate.
+                    // Calculate week index relative to start date.
+                    
+                    // Get 'Monday' (or Sunday) of the start date week.
+                    const getWeekStart = (d: Date) => {
+                        const day = d.getDay(); // 0 is Sunday
+                        const diff = d.getDate() - day; // adjust when day is sunday
+                        return new Date(d.setDate(diff)); // Sunday start
+                    };
+                    
+                    // Note: This modifies 'd' in place with setDate if not careful? 
+                    // No, new Date(d) copies first.
+                    // Actually setDate returns timestamp.
+                    
+                    // Safer:
+                    const startOfWeek_StartDate = new Date(startMidnight);
+                    startOfWeek_StartDate.setDate(startMidnight.getDate() - startMidnight.getDay());
+                    startOfWeek_StartDate.setHours(0,0,0,0);
+
+                    const startOfWeek_TargetDate = new Date(targetMidnight);
+                    startOfWeek_TargetDate.setDate(targetMidnight.getDate() - targetMidnight.getDay());
+                    startOfWeek_TargetDate.setHours(0,0,0,0);
+                    
+                    const diffTime = startOfWeek_TargetDate.getTime() - startOfWeek_StartDate.getTime();
+                    const diffWeeks = Math.round(diffTime / (1000 * 60 * 60 * 24 * 7));
+                    
+                    if (diffWeeks >= 0 && diffWeeks % freqWeeks === 0) {
+                        shouldSchedule = true;
+                    }
+                }
+            }
+
+            if (shouldSchedule) {
                 const identifier = `custom-${n.id}-${getLocalYYYYMMDD(targetDate)}`;
                 
-                // Check if already scheduled? Not strictly necessary if "replace" works, but safer to check to avoid churn
-                 // Optimized: Just schedule it. `scheduleNotificationAsync` with identifier updates it.
-                 // Wait, blindly calling `scheduleNotificationAsync` 30 times * N notifications on every app open might be heavy?
-                 // Let's filter: check if `identifier` is in `scheduled` list identifiers.
                  const isAlreadyScheduled = scheduled.some(s => s.identifier === identifier);
                  
                  if (!isAlreadyScheduled) {
@@ -145,7 +223,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                          },
                          trigger: {
                             type: Notifications.SchedulableTriggerInputTypes.DATE,
-                            date: targetDate, 
+                            date: targetDateTime, 
                          },
                          identifier,
                      });

@@ -23,6 +23,9 @@ export default function NotificationsScreen() {
   });
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [hue, setHue] = useState(0); // Red default
+  const [repeatType, setRepeatType] = useState<'week' | 'iteration'>('week');
+  const [repeatWeeks, setRepeatWeeks] = useState('1');
+  const [iterationDays, setIterationDays] = useState('2');
   
   // Picker visibility for Android
   const [showPicker, setShowPicker] = useState(false);
@@ -34,14 +37,30 @@ export default function NotificationsScreen() {
     setTime(d);
     setSelectedDays([]);
     setHue(0);
+    setRepeatType('week');
+    setRepeatWeeks('1');
+    setIterationDays('2');
   };
 
   const handleCreate = () => {
+    const weeks = parseInt(repeatWeeks) || 1;
+    const daysIter = parseInt(iterationDays) || 2;
+    
+    // Validate iteration days
+    if (repeatType === 'iteration' && daysIter <= 0) {
+        alert("Iteration days must be a positive number.");
+        return;
+    }
+
     addNotification({
         title,
         time: time.toISOString(),
+        startDates: new Date().toISOString(),
         days: selectedDays,
         colorHue: hue,
+        repeatType,
+        repeatFrequencyWeeks: weeks,
+        iterationFrequencyDays: daysIter,
     });
     setIsModalVisible(false);
     resetForm();
@@ -120,10 +139,52 @@ export default function NotificationsScreen() {
                     />
                 )}
 
-                <Text style={styles.label}>Repeat Days</Text>
-                <DaySelector selectedDays={selectedDays} onToggleDay={toggleDay} />
+                <Text style={styles.label}>Repeat Type</Text>
+                <View style={styles.toggleContainer}>
+                    <TouchableOpacity 
+                        style={[styles.toggleButton, repeatType === 'week' && styles.toggleButtonActive]} 
+                        onPress={() => setRepeatType('week')}
+                    >
+                        <Text style={[styles.toggleText, repeatType === 'week' && styles.toggleTextActive]}>Week</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.toggleButton, repeatType === 'iteration' && styles.toggleButtonActive]} 
+                        onPress={() => setRepeatType('iteration')}
+                    >
+                        <Text style={[styles.toggleText, repeatType === 'iteration' && styles.toggleTextActive]}>Iteration</Text>
+                    </TouchableOpacity>
+                </View>
 
-                <Text style={styles.label}>Color</Text>
+                {repeatType === 'week' ? (
+                    <>
+                        <Text style={styles.label}>Repeat every X weeks</Text>
+                        <TextInput 
+                            style={styles.input} 
+                            value={repeatWeeks} 
+                            onChangeText={setRepeatWeeks}
+                            keyboardType="numeric"
+                            placeholder="1"
+                            placeholderTextColor="#999"
+                        />
+                        <Text style={styles.label}>Repeat Days</Text>
+                        <DaySelector selectedDays={selectedDays} onToggleDay={toggleDay} />
+                    </>
+                ) : (
+                    <>
+                        <Text style={styles.label}>Repeat every X days</Text>
+                        <TextInput 
+                            style={styles.input} 
+                            value={iterationDays} 
+                            onChangeText={setIterationDays}
+                            keyboardType="numeric"
+                            placeholder="2"
+                            placeholderTextColor="#999"
+                        />
+                        <Text style={styles.hintText}>Starts from today.</Text>
+                    </>
+                )}
+
+                <Text style={[styles.label, { marginTop: 15 }]}>Color</Text>
                 <HueSlider hue={hue} onHueChange={setHue} />
                 <View style={{ height: 20, backgroundColor: `hsl(${hue}, 100%, 50%)`, borderRadius: 4, marginTop: 5, marginBottom: 15 }}></View>
 
@@ -193,6 +254,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     elevation: 5,
+    maxHeight: '90%', // Prevent overflow on small screens
   },
   modalTitle: {
     fontSize: 20,
@@ -247,4 +309,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333', // Default for cancel
   },
+  toggleContainer: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    backgroundColor: Colors.pastel.global.inputBackground,
+    borderRadius: 8,
+    padding: 4,
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 6,
+  },
+  toggleButtonActive: {
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleText: {
+    color: '#666',
+    fontWeight: '600',
+  },
+  toggleTextActive: {
+    color: '#000',
+  },
+  hintText: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: -10,
+    marginBottom: 15,
+    fontStyle: 'italic',
+  }
 });
