@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { CustomNotificationProvider } from '@/context/CustomNotificationContext';
 import { HabitProvider } from '@/context/HabitContext';
 
 export {
@@ -49,7 +50,9 @@ export default function RootLayout() {
 
   return (
     <HabitProvider>
-      <RootLayoutNav />
+      <CustomNotificationProvider>
+        <RootLayoutNav />
+      </CustomNotificationProvider>
     </HabitProvider>
   );
 }
