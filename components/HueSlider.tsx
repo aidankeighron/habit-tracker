@@ -33,7 +33,7 @@ export const HueSlider: React.FC<HueSliderProps> = ({ hue, onHueChange, height =
       onLayout={(e) => (widthRef.current = e.nativeEvent.layout.width)}
       {...panResponder.panHandlers}
     >
-      <Svg style={StyleSheet.absoluteFill}>
+      <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
         <Defs>
           <LinearGradient id="rainbow" x1="0" y1="0" x2="1" y2="0">
             <Stop offset="0" stopColor="red" />
@@ -49,6 +49,7 @@ export const HueSlider: React.FC<HueSliderProps> = ({ hue, onHueChange, height =
       </Svg>
       {/* Slider Knob */}
       <View
+        pointerEvents="none"
         style={[
           styles.knob,
           {
