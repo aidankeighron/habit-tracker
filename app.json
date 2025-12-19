@@ -34,6 +34,10 @@
     "plugins": [
       "expo-router"
     ],
+    "notification": {
+      "icon": "./assets/images/notification-icon.png",
+      "color": "#9C27B0"
+    },
     "experiments": {
       "typedRoutes": true
     },
