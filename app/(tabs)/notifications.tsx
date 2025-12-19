@@ -247,45 +247,45 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    padding: 20,
+    padding: 10,
   },
   modalContent: {
     backgroundColor: '#FFF',
     borderRadius: 16,
-    padding: 20,
+    padding: 15,
     elevation: 5,
     maxHeight: '90%', // Prevent overflow on small screens
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 15,
     textAlign: 'center',
     color: Colors.pastel.global.text, 
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 4,
     color: Colors.pastel.global.text,
   },
   input: {
     backgroundColor: Colors.pastel.global.inputBackground,
-    padding: 12,
+    padding: 8,
     borderRadius: 8,
-    marginBottom: 15,
-    fontSize: 16,
+    marginBottom: 10,
+    fontSize: 14,
     color: Colors.pastel.global.text,
   },
   timeButton: {
     backgroundColor: Colors.pastel.global.inputBackground,
-    padding: 12,
+    padding: 8,
     borderRadius: 8,
-    marginBottom: 15,
+    marginBottom: 10,
     alignItems: 'center',
   },
   timeButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.pastel.global.text,
   },
   modalButtons: {
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    padding: 15,
+    padding: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -311,14 +311,14 @@ const styles = StyleSheet.create({
   },
   toggleContainer: {
     flexDirection: 'row',
-    marginBottom: 15,
+    marginBottom: 10,
     backgroundColor: Colors.pastel.global.inputBackground,
     borderRadius: 8,
     padding: 4,
   },
   toggleButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 6,
     alignItems: 'center',
     borderRadius: 6,
   },
@@ -333,6 +333,7 @@ const styles = StyleSheet.create({
   toggleText: {
     color: '#666',
     fontWeight: '600',
+    fontSize: 12,
   },
   toggleTextActive: {
     color: '#000',
@@ -340,8 +341,8 @@ const styles = StyleSheet.create({
   hintText: {
     fontSize: 12,
     color: '#888',
-    marginTop: -10,
-    marginBottom: 15,
+    marginTop: -5,
+    marginBottom: 10,
     fontStyle: 'italic',
   }
 });
