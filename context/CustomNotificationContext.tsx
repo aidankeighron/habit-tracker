@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
 
 export interface CustomNotification {
@@ -46,6 +46,16 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
         },
       },
     ]);
+
+    // Create the custom channel
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('custom-scheduled', {
+        name: 'Custom Scheduled',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
 
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
@@ -228,11 +238,12 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                      await Notifications.scheduleNotificationAsync({
                          content: {
                              title: n.title,
-                             body: "It's time!",
                              data: { customNotificationId: n.id },
                              color: `hsl(${n.colorHue}, 100%, 50%)`,
                              sticky: true, // Make persistent on Android
                              categoryIdentifier: 'custom-persistent', // Add action button
+                             // @ts-ignore
+                             channelId: 'custom-scheduled',
                          },
                          trigger: {
                             type: Notifications.SchedulableTriggerInputTypes.DATE,
