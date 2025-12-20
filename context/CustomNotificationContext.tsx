@@ -36,6 +36,17 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   }, []);
 
   useEffect(() => {
+    // Register the category with the action
+    Notifications.setNotificationCategoryAsync('custom-persistent', [
+      {
+        identifier: 'clear',
+        buttonTitle: 'Clear',
+        options: {
+          opensAppToForeground: false,
+        },
+      },
+    ]);
+
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
         appState.current.match(/inactive|background/) &&
@@ -219,7 +230,9 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                              title: n.title,
                              body: "It's time!",
                              data: { customNotificationId: n.id },
-                             color: `hsl(${n.colorHue}, 100%, 50%)`, // Attempt to set color, though android support varies
+                             color: `hsl(${n.colorHue}, 100%, 50%)`,
+                             sticky: true, // Make persistent on Android
+                             categoryIdentifier: 'custom-persistent', // Add action button
                          },
                          trigger: {
                             type: Notifications.SchedulableTriggerInputTypes.DATE,
