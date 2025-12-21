@@ -56,4 +56,5 @@ export interface HabitContextType {
   editHistory: (type: HabitType, date: string, value: number) => void;
   updateDailyHistory: (date: string, values: DailyHabitData) => void;
   updateRolloverHour: (hour: number) => void;
+  resetHabitNotifications: () => Promise<void>;
 }

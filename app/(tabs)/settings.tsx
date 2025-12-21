@@ -6,7 +6,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, Te
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
-  const { settings, updateHabitTotals, history, updateDailyHistory, updateNotificationIntervals, updateRolloverHour } = useHabits();
+  const { settings, updateHabitTotals, history, updateDailyHistory, updateNotificationIntervals, updateRolloverHour, resetHabitNotifications } = useHabits();
   
   const [waterTotal, setWaterTotal] = useState(settings.totals.water.toString());
   const [foodTotal, setFoodTotal] = useState(settings.totals.food.toString());
@@ -54,6 +54,24 @@ export default function SettingsScreen() {
   const saveRollover = () => {
     updateRolloverHour(parseInt(rolloverHour) || 0);
     Alert.alert('Success', 'Rollover Time updated successfully.');
+  };
+
+  const handleResetNotifications = async () => {
+    Alert.alert(
+      'Reset Notifications',
+      'Are you sure you want to unschedule and reschedule all habit notifications?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Reset', 
+          style: 'destructive',
+          onPress: async () => {
+            await resetHabitNotifications();
+            Alert.alert('Success', 'Notifications have been reset.');
+          }
+        }
+      ]
+    );
   };
 
   const loadDataForDate = () => {
@@ -166,6 +184,15 @@ export default function SettingsScreen() {
 
         <TouchableOpacity style={styles.button} onPress={saveRollover}>
             <Text style={styles.buttonText}>Save Rollover</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Troubleshooting</Text>
+        <Text style={styles.subtitle}>If you are not receiving notifications, try resetting them.</Text>
+        
+        <TouchableOpacity style={[styles.button, { backgroundColor: Colors.pastel.food.dark }]} onPress={handleResetNotifications}>
+            <Text style={styles.buttonText}>Reset Notifications</Text>
         </TouchableOpacity>
       </View>
 

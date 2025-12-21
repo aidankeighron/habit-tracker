@@ -6,11 +6,11 @@ import { useCustomNotifications } from '@/context/CustomNotificationContext';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState } from 'react';
-import { Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NotificationsScreen() {
-  const { notifications, addNotification, removeNotification } = useCustomNotifications();
+  const { notifications, addNotification, removeNotification, resetCustomNotifications } = useCustomNotifications();
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   
@@ -65,6 +65,23 @@ export default function NotificationsScreen() {
     setIsModalVisible(false);
     resetForm();
   };
+
+  const handleReset = () => {
+    Alert.alert(
+        'Reset Notifications',
+        'Are you sure you want to reset all custom notifications? This will unschedule and reschedule them.',
+        [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+                text: 'Reset', 
+                onPress: async () => {
+                    await resetCustomNotifications();
+                    Alert.alert('Success', 'Notifications have been reset.');
+                }
+            }
+        ]
+    );
+  };
   
   const toggleDay = (day: number) => {
     if (selectedDays.includes(day)) {
@@ -88,6 +105,12 @@ export default function NotificationsScreen() {
         <TouchableOpacity style={styles.addButton} onPress={() => setIsModalVisible(true)}>
             <FontAwesome name="plus" size={20} color="white" />
         </TouchableOpacity>
+      </View>
+      
+      <View style={{ paddingHorizontal: 20, marginBottom: 10 }}>
+          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+              <Text style={styles.resetButtonText}>Reset Notifications</Text>
+          </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -232,6 +255,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 4,
+  },
+  resetButton: {
+    backgroundColor: '#333',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  resetButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   content: {
     padding: 20,

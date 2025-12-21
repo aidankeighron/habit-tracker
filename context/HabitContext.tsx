@@ -306,6 +306,26 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // Assuming there's an interface definition for HabitContextType somewhere above this,
+  // we're adding resetHabitNotifications to it.
+  // For example, if the interface looked like this:
+  // interface HabitContextType {
+  //   habits: DailyHabitData;
+  //   history: HabitHistory;
+  //   settings: HabitSettings;
+  //   lastUpdated: LastUpdated;
+  //   today: string;
+  //   updateHabit: (type: HabitType, value: number) => Promise<void>;
+  //   updateTotal: (type: HabitType, total: number) => Promise<void>;
+  //   updateHabitTotals: (totals: HabitSettings['totals']) => Promise<void>;
+  //   editHistory: (type: HabitType, date: string, value: number) => Promise<void>;
+  //   updateDailyHistory: (date: string, values: DailyHabitData) => Promise<void>;
+  //   updateNotificationInterval: (type: HabitType, hours: number) => Promise<void>;
+  //   updateNotificationIntervals: (intervals: HabitSettings['notifications']) => Promise<void>;
+  //   updateRolloverHour: (hour: number) => Promise<void>;
+  //   resetHabitNotifications: () => Promise<void>; // This line would be added
+  // }
+
   const updateNotificationIntervals = async (intervals: HabitSettings['notifications']) => {
     const newSettings = { ...settings, notifications: { ...settings.notifications, ...intervals } };
     setSettings(newSettings);
@@ -332,6 +352,19 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const resetHabitNotifications = async () => {
+    // Cancel all habit reminders
+    await Promise.all([
+      Notifications.cancelScheduledNotificationAsync('reminder-water'),
+      Notifications.cancelScheduledNotificationAsync('reminder-food'),
+      Notifications.cancelScheduledNotificationAsync('reminder-workout'),
+      Notifications.cancelScheduledNotificationAsync('reminder-stretch'),
+      Notifications.cancelScheduledNotificationAsync('reminder-racing'),
+    ]);
+    // Re-schedule
+    await refreshNotifications();
+  };
+
   const habits: DailyHabitData = {
     water: history.water[today] || 0,
     food: history.food[today] || 0,
@@ -341,7 +374,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, updateHabitTotals, editHistory, updateDailyHistory, updateNotificationInterval, updateNotificationIntervals, updateRolloverHour } as any}>
+    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, updateHabitTotals, editHistory, updateDailyHistory, updateNotificationInterval, updateNotificationIntervals, updateRolloverHour, resetHabitNotifications } as any}>
       {children}
     </HabitContext.Provider>
   );

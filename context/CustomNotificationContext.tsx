@@ -33,6 +33,7 @@ interface CustomNotificationContextType {
   notifications: CustomNotification[];
   addNotification: (n: Omit<CustomNotification, 'id'>) => Promise<void>;
   removeNotification: (id: string) => Promise<void>;
+  resetCustomNotifications: () => Promise<void>;
 }
 
 const CustomNotificationContext = createContext<CustomNotificationContextType | undefined>(undefined);
@@ -127,6 +128,18 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
             await Notifications.cancelScheduledNotificationAsync(notification.identifier);
         }
     }
+  };
+
+  const resetCustomNotifications = async () => {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    for (const notification of scheduled) {
+        // Check if it's one of ours (has customNotificationId)
+        if (notification.content.data?.customNotificationId) {
+             await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+        }
+    }
+    // Re-schedule everything from scratch
+    await scheduleAllNotifications(notifications);
   };
 
   const scheduleAllNotifications = async (currentNotifications: CustomNotification[]) => {
@@ -271,7 +284,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   };
 
   return (
-    <CustomNotificationContext.Provider value={{ notifications, addNotification, removeNotification }}>
+    <CustomNotificationContext.Provider value={{ notifications, addNotification, removeNotification, resetCustomNotifications }}>
       {children}
     </CustomNotificationContext.Provider>
   );
