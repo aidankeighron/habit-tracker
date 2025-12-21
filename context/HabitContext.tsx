@@ -89,6 +89,12 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#FF231F7C',
       });
+      await Notifications.setNotificationChannelAsync('habit-reminders', {
+        name: 'Habit Reminders',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
     }
 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -208,6 +214,8 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         content: {
           title: "Habit Reminder",
           body: `It's been a while since you updated your ${type} habit!`,
+          // @ts-ignore
+          channelId: 'habit-reminders',
         },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: Math.max(1, Math.floor(secondsUntil)) },
         identifier,
