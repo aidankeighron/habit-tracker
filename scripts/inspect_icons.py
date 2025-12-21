@@ -4,7 +4,8 @@ import os
 files = [
     'icon.png',
     'adaptive-icon.png',
-    'icon_source.png'
+    'icon_source.png',
+    'custom-notification-icon.png'
 ]
 base_path = 'c:/Users/Billy1301/Documents/Programming/Programs/habit-tracker/assets/images/'
 

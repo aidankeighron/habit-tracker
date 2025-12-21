@@ -31,13 +31,15 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router"
-    ],
+
     "notification": {
       "icon": "./assets/images/notification-icon.png",
       "color": "#9C27B0"
     },
+    "plugins": [
+      "expo-router",
+      "./plugins/withAndroidCustomNotificationIcon"
+    ],
     "experiments": {
       "typedRoutes": true
     },

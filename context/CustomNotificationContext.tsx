@@ -244,6 +244,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                              categoryIdentifier: 'custom-persistent', // Add action button
                              // @ts-ignore
                              channelId: 'custom-scheduled',
+                             icon: 'custom_notification_icon',
                          },
                          trigger: {
                             type: Notifications.SchedulableTriggerInputTypes.DATE,
