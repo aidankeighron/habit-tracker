@@ -4,6 +4,18 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { AppState, Platform } from 'react-native';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
 
+// Helper to convert HSL to Hex
+function hslToHex(h: number, s: number, l: number): string {
+  l /= 100;
+  const a = s * Math.min(l, 1 - l) / 100;
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
 export interface CustomNotification {
   id: string;
   title: string;
@@ -239,7 +251,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                          content: {
                              title: n.title,
                              data: { customNotificationId: n.id },
-                             color: `hsl(${n.colorHue}, 100%, 50%)`,
+                             color: hslToHex(n.colorHue, 100, 50),
                              sticky: true, // Make persistent on Android
                              categoryIdentifier: 'custom-persistent', // Add action button
                              // @ts-ignore
