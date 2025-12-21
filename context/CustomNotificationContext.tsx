@@ -81,8 +81,16 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
       appState.current = nextAppState;
     });
 
+    // Handle user interactions with notifications (e.g. pressing the Clear button)
+    const notificationListener = Notifications.addNotificationResponseReceivedListener(response => {
+      if (response.actionIdentifier === 'clear') {
+        Notifications.dismissNotificationAsync(response.notification.request.identifier);
+      }
+    });
+
     return () => {
       subscription.remove();
+      notificationListener.remove();
     };
   }, [notifications]);
 
