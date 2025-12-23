@@ -49,7 +49,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     stretch: {},
     racing: {},
   });
-
+  
   const [lastUpdated, setLastUpdated] = useState<{
     water: string | null;
     food: string | null;
@@ -63,24 +63,24 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     stretch: null,
     racing: null,
   });
-
+  
   const [settings, setSettings] = useState<HabitSettings>({
     totals: { water: 8, food: 3, workout: 30, stretch: 2, racing: 1 },
     notifications: { water: 2, food: 4, workout: 16, stretch: 6, racing: -1 }, // Default hours
     rolloverHour: 0,
   });
-
+  
   const [today, setToday] = useState(getEffectiveDate(0));
-
+  
   const appState = useRef(AppState.currentState);
-
+  
   // const getTodayDate = () => new Date().toISOString().split('T')[0]; // Removed in favor of today state
-
+  
   useEffect(() => {
     loadData();
     registerForPushNotificationsAsync();
   }, []);
-
+  
   async function registerForPushNotificationsAsync() {
     if (Platform.OS === 'android') {
       Notifications.setNotificationChannelGroupAsync('habitGroup', {
@@ -92,7 +92,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         groupId: 'habitGroup',
       });
     }
-
+    
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     if (existingStatus !== 'granted') {
@@ -100,7 +100,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       finalStatus = status;
     }
   }
-
+  
   const loadData = async () => {
     try {
       const [water, food, workout, stretch, racing, storedSettings, storedLastUpdated] = await Promise.all([
@@ -112,7 +112,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         AsyncStorage.getItem(KEYS.SETTINGS),
         AsyncStorage.getItem(KEYS.LAST_UPDATED),
       ]);
-
+      
       setHistory({
         water: water ? JSON.parse(water) : {},
         food: food ? JSON.parse(food) : {},
@@ -120,23 +120,23 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         stretch: stretch ? JSON.parse(stretch) : {},
         racing: racing ? JSON.parse(racing) : {},
       });
-
+      
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings);
         
         // Ensure defaults for new fields exist for existing users
         if (parsedSettings.rolloverHour === undefined) {
-            parsedSettings.rolloverHour = 0;
+          parsedSettings.rolloverHour = 0;
         }
         
         if (parsedSettings.totals.racing === undefined) {
-            parsedSettings.totals.racing = 1;
+          parsedSettings.totals.racing = 1;
         }
         
         if (parsedSettings.notifications.racing === undefined) {
-            parsedSettings.notifications.racing = -1;
+          parsedSettings.notifications.racing = -1;
         }
-
+        
         setSettings(parsedSettings);
         setToday(getEffectiveDate(parsedSettings.rolloverHour));
       }
@@ -148,7 +148,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.error('Failed to load habit data', e);
     }
   };
-
+  
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
@@ -159,18 +159,18 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Check if date changed
         const currentEffectiveDate = getEffectiveDate(settings.rolloverHour);
         if (currentEffectiveDate !== today) {
-            setToday(currentEffectiveDate);
+          setToday(currentEffectiveDate);
         }
       }
-
+      
       appState.current = nextAppState;
     });
-
+    
     return () => {
       subscription.remove();
     };
   }, [lastUpdated, settings]);
-
+  
   const refreshNotifications = async () => {
     await Promise.all([
       scheduleReminder('water'),
@@ -190,36 +190,36 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // We pass current values to the helper logic
     scheduleReminderForType(type, lastUpdateStr, intervalHours);
   };
-
+  
   const scheduleReminderForType = async (type: HabitType, lastUpdateStr: string, intervalHours: number) => {
-      const identifier = `reminder-${type}`;
-      await Notifications.cancelScheduledNotificationAsync(identifier);
-      
-      const lastUpdate = new Date(lastUpdateStr);
-      const now = new Date();
-      // Calculate trigger date
-      const triggerDate = new Date(lastUpdate.getTime() + intervalHours * 60 * 60 * 1000);
-      
-      let secondsUntil = (triggerDate.getTime() - now.getTime()) / 1000;
-      
-      if (secondsUntil <= 0) {
-        secondsUntil = 1; 
-      }
-      
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Habit Reminder",
-          body: `It's been a while since you updated your ${type} habit!`,
-        },
-        trigger: { 
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, 
-          seconds: Math.max(1, Math.floor(secondsUntil)),
-          channelId: 'habitReminders'
-        },
-        identifier,
-      });
+    const identifier = `reminder-${type}`;
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+    
+    const lastUpdate = new Date(lastUpdateStr);
+    const now = new Date();
+    // Calculate trigger date
+    const triggerDate = new Date(lastUpdate.getTime() + intervalHours * 60 * 60 * 1000);
+    
+    let secondsUntil = (triggerDate.getTime() - now.getTime()) / 1000;
+    
+    if (secondsUntil <= 0) {
+      secondsUntil = 1; 
+    }
+    
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Habit Reminder",
+        body: `It's been a while since you updated your ${type} habit!`,
+      },
+      trigger: { 
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, 
+        seconds: Math.max(1, Math.floor(secondsUntil)),
+        channelId: 'habitReminders'
+      },
+      identifier,
+    });
   };
-
+  
   const updateHabit = async (type: HabitType, value: number) => {
     // Use the reactive 'today' state
     const newHistory = { ...history };
@@ -242,7 +242,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     scheduleReminderForType(type, nowStr, settings.notifications[type]);
   };
-
+  
   const editHistory = async (type: HabitType, date: string, value: number) => {
     const newHistory = { ...history };
     newHistory[type] = { ...newHistory[type], [date]: value };
@@ -256,7 +256,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
   };
-
+  
   const updateDailyHistory = async (date: string, values: DailyHabitData) => {
     const newHistory = { ...history };
     
@@ -271,14 +271,14 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Save all to async storage in parallel, keys are distinct so no race condition actually
     await Promise.all([
-        AsyncStorage.setItem(KEYS.WATER, JSON.stringify(newHistory.water)),
-        AsyncStorage.setItem(KEYS.FOOD, JSON.stringify(newHistory.food)),
-        AsyncStorage.setItem(KEYS.WORKOUT, JSON.stringify(newHistory.workout)),
-        AsyncStorage.setItem(KEYS.STRETCH, JSON.stringify(newHistory.stretch)),
-        AsyncStorage.setItem(KEYS.RACING, JSON.stringify(newHistory.racing)),
+      AsyncStorage.setItem(KEYS.WATER, JSON.stringify(newHistory.water)),
+      AsyncStorage.setItem(KEYS.FOOD, JSON.stringify(newHistory.food)),
+      AsyncStorage.setItem(KEYS.WORKOUT, JSON.stringify(newHistory.workout)),
+      AsyncStorage.setItem(KEYS.STRETCH, JSON.stringify(newHistory.stretch)),
+      AsyncStorage.setItem(KEYS.RACING, JSON.stringify(newHistory.racing)),
     ]);
   };
-
+  
   const updateTotal = async (type: HabitType, total: number) => {
     const newSettings = { ...settings };
     newSettings.totals[type] = total;
@@ -300,10 +300,10 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Reschedule immediate
     if (lastUpdated[type]) {
-        scheduleReminderForType(type, lastUpdated[type]!, hours);
+      scheduleReminderForType(type, lastUpdated[type]!, hours);
     }
   };
-
+  
   // Assuming there's an interface definition for HabitContextType somewhere above this,
   // we're adding resetHabitNotifications to it.
   // For example, if the interface looked like this:
@@ -323,7 +323,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   //   updateRolloverHour: (hour: number) => Promise<void>;
   //   resetHabitNotifications: () => Promise<void>; // This line would be added
   // }
-
+  
   const updateNotificationIntervals = async (intervals: HabitSettings['notifications']) => {
     const newSettings = { ...settings, notifications: { ...settings.notifications, ...intervals } };
     setSettings(newSettings);
@@ -331,12 +331,12 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     // Reschedule all
     for (const type of Object.keys(intervals) as HabitType[]) {
-        if (lastUpdated[type]) {
-             scheduleReminderForType(type, lastUpdated[type]!, intervals[type]);
-        }
+      if (lastUpdated[type]) {
+        scheduleReminderForType(type, lastUpdated[type]!, intervals[type]);
+      }
     }
   };
-
+  
   const updateRolloverHour = async (hour: number) => {
     const newSettings = { ...settings };
     newSettings.rolloverHour = hour;
@@ -346,10 +346,10 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Recalculate today immediately
     const newToday = getEffectiveDate(hour);
     if (newToday !== today) {
-        setToday(newToday);
+      setToday(newToday);
     }
   };
-
+  
   const resetHabitNotifications = async () => {
     // Cancel all habit reminders
     await Promise.all([
@@ -362,7 +362,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Re-schedule
     await refreshNotifications();
   };
-
+  
   const habits: DailyHabitData = {
     water: history.water[today] || 0,
     food: history.food[today] || 0,
@@ -370,10 +370,10 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     stretch: history.stretch[today] || 0,
     racing: history.racing[today] || 0,
   };
-
+  
   return (
     <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, updateHabitTotals, editHistory, updateDailyHistory, updateNotificationInterval, updateNotificationIntervals, updateRolloverHour, resetHabitNotifications } as any}>
-      {children}
+    {children}
     </HabitContext.Provider>
   );
 };
