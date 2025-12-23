@@ -106,6 +106,7 @@ export default function StatsScreen() {
           style={styles.chart}
           withInnerLines={false}
           withOuterLines={false}
+          fromZero={true}
         />
         <Text style={[styles.unitLabel, { color: colorTheme.dark }]}>{unit}</Text>
       </View>
