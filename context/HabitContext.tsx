@@ -83,7 +83,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   async function registerForPushNotificationsAsync() {
     if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelGroupAsync('habitGroup', {
+      await Notifications.setNotificationChannelGroupAsync('habitGroup', {
         name: 'Habit Reminders',
       });
       await Notifications.setNotificationChannelAsync('habitReminders', {

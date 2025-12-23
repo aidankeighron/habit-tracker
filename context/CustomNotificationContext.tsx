@@ -51,14 +51,16 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   useEffect(() => {
     // Create the custom channel group and channel
     if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelGroupAsync('customGroup', {
-        name: 'Scheduled Habits',
-      });
-      Notifications.setNotificationChannelAsync('customScheduled', {
-        name: 'Scheduled Habits',
-        importance: Notifications.AndroidImportance.HIGH,
-        groupId: 'customGroup',
-      });
+      (async () => {
+        await Notifications.setNotificationChannelGroupAsync('customGroup', {
+          name: 'Scheduled Habits',
+        });
+        await Notifications.setNotificationChannelAsync('customScheduled', {
+          name: 'Scheduled Habits',
+          importance: Notifications.AndroidImportance.HIGH,
+          groupId: 'customGroup',
+        });
+      })()
     }
     
     const subscription = AppState.addEventListener('change', nextAppState => {
