@@ -1,6 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useHabits } from '@/context/HabitContext';
 import { getLocalYYYYMMDD } from '@/utils/dateUtils';
+import Constants from 'expo-constants';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -278,6 +279,13 @@ export default function SettingsScreen() {
     </TouchableOpacity>
     </View>
     
+    <View style={styles.section}>
+    <Text style={styles.sectionTitle}>App Info</Text>
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>Version</Text>
+      <Text style={styles.infoValue}>{Constants.expoConfig?.version ?? '1.0.0'}</Text>
+    </View>
+    </View>
     </ScrollView>
     </SafeAreaView>
     </KeyboardAvoidingView>
@@ -358,5 +366,20 @@ const styles = StyleSheet.create({
   smallButtonText: {
     color: '#FAFAFA',
     fontWeight: 'bold',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  infoLabel: {
+    fontSize: 16,
+    color: Colors.pastel.global.text,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: Colors.pastel.global.text,
+    opacity: 0.7,
   },
 });
