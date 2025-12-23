@@ -49,24 +49,15 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   }, []);
 
   useEffect(() => {
-    // Register the category with the action
-    Notifications.setNotificationCategoryAsync('custom-persistent', [
-      {
-        identifier: 'clear',
-        buttonTitle: 'Clear',
-        options: {
-          opensAppToForeground: false,
-        },
-      },
-    ]);
-
-    // Create the custom channel
+    // Create the custom channel group and channel
     if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('custom-scheduled', {
-        name: 'Custom Scheduled',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
+      Notifications.setNotificationChannelGroupAsync('customGroup', {
+        name: 'Scheduled Habits',
+      });
+      Notifications.setNotificationChannelAsync('customScheduled', {
+        name: 'Scheduled Habits',
+        importance: Notifications.AndroidImportance.HIGH,
+        groupId: 'customGroup',
       });
     }
 
@@ -81,16 +72,8 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
       appState.current = nextAppState;
     });
 
-    // Handle user interactions with notifications (e.g. pressing the Clear button)
-    const notificationListener = Notifications.addNotificationResponseReceivedListener(response => {
-      if (response.actionIdentifier === 'clear') {
-        Notifications.dismissNotificationAsync(response.notification.request.identifier);
-      }
-    });
-
     return () => {
       subscription.remove();
-      notificationListener.remove();
     };
   }, [notifications]);
 
@@ -272,16 +255,12 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                          content: {
                              title: n.title,
                              data: { customNotificationId: n.id },
-                             color: hslToHex(n.colorHue, 100, 50),
-                             sticky: true, // Make persistent on Android
-                             categoryIdentifier: 'custom-persistent', // Add action button
-                             // @ts-ignore
-                             channelId: 'custom-scheduled',
-                             icon: 'custom_notification_icon',
-                         },
-                         trigger: {
-                            type: Notifications.SchedulableTriggerInputTypes.DATE,
-                            date: targetDateTime, 
+                             color: hslToHex(n.colorHue, 100, 50)
+                          },
+                            trigger: {
+                              type: Notifications.SchedulableTriggerInputTypes.DATE,
+                              date: targetDateTime, 
+                              channelId: 'customScheduled',
                          },
                          identifier,
                      });
