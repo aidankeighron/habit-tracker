@@ -38,7 +38,30 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withAndroidCustomNotificationIcon"
+      "./plugins/withAndroidCustomNotificationIcon",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "HomeWidget",
+              "label": "Daily Habits",
+              "minWidth": "260dp",
+              "minHeight": "120dp",
+              "description": "Track your daily habits",
+              "previewImage": "./assets/images/adaptive-icon.png"
+            },
+            {
+              "name": "StatsWidget",
+              "label": "Habit Stats",
+              "minWidth": "260dp",
+              "minHeight": "120dp",
+              "description": "View your habit statistics",
+              "previewImage": "./assets/images/adaptive-icon.png"
+            }
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

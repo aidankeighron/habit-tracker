@@ -2,8 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
+import { requestWidgetUpdate } from 'react-native-android-widget';
+import { HomeWidget } from '../components/widgets/HomeWidget';
+import { StatsWidget } from '../components/widgets/StatsWidget';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
+
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
 
@@ -241,6 +245,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await AsyncStorage.setItem(KEYS.LAST_UPDATED, JSON.stringify(newLastUpdated));
     
     scheduleReminderForType(type, nowStr, settings.notifications[type]);
+    updateWidgets(newHistory, settings);
   };
   
   const editHistory = async (type: HabitType, date: string, value: number) => {
@@ -255,6 +260,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'racing') key = KEYS.RACING;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
+    updateWidgets(newHistory, settings);
   };
   
   const updateDailyHistory = async (date: string, values: DailyHabitData) => {
@@ -277,6 +283,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       AsyncStorage.setItem(KEYS.STRETCH, JSON.stringify(newHistory.stretch)),
       AsyncStorage.setItem(KEYS.RACING, JSON.stringify(newHistory.racing)),
     ]);
+    updateWidgets(newHistory, settings);
   };
   
   const updateTotal = async (type: HabitType, total: number) => {
@@ -361,6 +368,72 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ]);
     // Re-schedule
     await refreshNotifications();
+  };
+  
+  const updateWidgets = async (
+    currentHistory: typeof history,
+    currentSettings: typeof settings
+  ) => {
+    try {
+        const currentDate = today;
+        const currentHabits = {
+            water: currentHistory.water[currentDate] || 0,
+            food: currentHistory.food[currentDate] || 0,
+            workout: currentHistory.workout[currentDate] || 0,
+            stretch: currentHistory.stretch[currentDate] || 0,
+            racing: currentHistory.racing[currentDate] || 0,
+        };
+        const goals = currentSettings.totals;
+
+        // Update HomeWidget
+        requestWidgetUpdate({
+            widgetName: 'HomeWidget',
+            renderWidget: () => <HomeWidget habits={currentHabits} goals={goals} />,
+            widgetNotFound: () => {
+                // Widget not added by user, ignore
+            }
+        });
+
+        // Calculate averages for StatsWidget (Last 7 days)
+        // Similar logic to Stats screen but simplified
+        const getAvg = (type: HabitType) => {
+             // simplified: last 7 days including today? or just past 7 days?
+             // let's grab last 7 days keys
+             // actually we need to compute keys.
+             // For simplicity, let's just accept we might not have all keys and loop back 7 days.
+             let sum = 0;
+             const date = new Date(); // use real time or today? use 'today' string logic
+             // logic is repeated from stats screen a bit...
+             // For now let's just pass 0s if too complex, but we want real data.
+             
+             // Simple loop
+             for (let i = 0; i < 7; i++) {
+                 const d = new Date();
+                 d.setDate(d.getDate() - i);
+                 const dateStr = getLocalYYYYMMDD(d);
+                 sum += currentHistory[type][dateStr] || 0;
+             }
+             return sum / 7;
+        };
+
+        const averages = {
+            water: getAvg('water'),
+            food: getAvg('food'),
+            workout: getAvg('workout'),
+            stretch: getAvg('stretch'),
+            racing: getAvg('racing'),
+        };
+
+        // Update StatsWidget
+        requestWidgetUpdate({
+            widgetName: 'StatsWidget',
+            renderWidget: () => <StatsWidget averages={averages} />,
+            widgetNotFound: () => {}
+        });
+
+    } catch (e) {
+        console.error('Failed to update widgets', e);
+    }
   };
   
   const habits: DailyHabitData = {
