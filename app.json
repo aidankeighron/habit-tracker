@@ -58,6 +58,38 @@
               "minHeight": "120dp",
               "description": "View your habit statistics",
               "previewImage": "./assets/images/adaptive-icon.png"
+            },
+            {
+              "name": "HomeWaterFoodSmall",
+              "label": "Water & Food (Small)",
+              "minWidth": "120dp",
+              "minHeight": "120dp",
+              "description": "Track Water and Food",
+              "previewImage": "./assets/images/adaptive-icon.png"
+            },
+            {
+              "name": "HomeWaterFoodLarge",
+              "label": "Water & Food (Large)",
+              "minWidth": "260dp",
+              "minHeight": "120dp",
+              "description": "Track Water and Food",
+              "previewImage": "./assets/images/adaptive-icon.png"
+            },
+            {
+              "name": "StatsWaterFoodSmall",
+              "label": "Stats W/F (Small)",
+              "minWidth": "120dp",
+              "minHeight": "120dp",
+              "description": "Water and Food Stats",
+              "previewImage": "./assets/images/adaptive-icon.png"
+            },
+            {
+              "name": "StatsWaterFoodLarge",
+              "label": "Stats W/F (Large)",
+              "minWidth": "260dp",
+              "minHeight": "120dp",
+              "description": "Water and Food Stats",
+              "previewImage": "./assets/images/adaptive-icon.png"
             }
           ]
         }

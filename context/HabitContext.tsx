@@ -5,6 +5,8 @@ import { AppState, Platform } from 'react-native';
 import { requestWidgetUpdate } from 'react-native-android-widget';
 import { HomeWidget } from '../components/widgets/HomeWidget';
 import { StatsWidget } from '../components/widgets/StatsWidget';
+import { WaterFoodHomeWidget } from '../components/widgets/WaterFoodHomeWidget';
+import { WaterFoodStatsWidget } from '../components/widgets/WaterFoodStatsWidget';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
 
@@ -431,6 +433,37 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         requestWidgetUpdate({
             widgetName: 'StatsWidget',
             renderWidget: () => <StatsWidget averages={averages} />,
+            widgetNotFound: () => {}
+        });
+
+        // Update WaterFoodHomeWidget (Small & Large)
+        const waterFoodHabits = { water: currentHabits.water, food: currentHabits.food };
+        const waterFoodGoals = { water: goals.water, food: goals.food };
+        
+        requestWidgetUpdate({
+            widgetName: 'HomeWaterFoodSmall',
+            renderWidget: () => <WaterFoodHomeWidget habits={waterFoodHabits} goals={waterFoodGoals} />,
+            widgetNotFound: () => {}
+        });
+        
+        requestWidgetUpdate({
+            widgetName: 'HomeWaterFoodLarge',
+            renderWidget: () => <WaterFoodHomeWidget habits={waterFoodHabits} goals={waterFoodGoals} />,
+            widgetNotFound: () => {}
+        });
+
+        // Update WaterFoodStatsWidget (Small & Large)
+        const waterFoodAverages = { water: averages.water, food: averages.food };
+
+        requestWidgetUpdate({
+            widgetName: 'StatsWaterFoodSmall',
+            renderWidget: () => <WaterFoodStatsWidget averages={waterFoodAverages} />,
+            widgetNotFound: () => {}
+        });
+
+        requestWidgetUpdate({
+            widgetName: 'StatsWaterFoodLarge',
+            renderWidget: () => <WaterFoodStatsWidget averages={waterFoodAverages} />,
             widgetNotFound: () => {}
         });
 
