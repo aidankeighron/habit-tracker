@@ -257,7 +257,10 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
               content: {
                 title: n.title,
                 data: { customNotificationId: n.id },
-                color: hslToHex(n.colorHue, 100, 50)
+                color: hslToHex(n.colorHue, 100, 50),
+                threadIdentifier: 'scheduled_habits_group',
+                group: 'scheduled_habits_group',
+                groupId: 'scheduled_habits_group',
               },
               trigger: {
                 type: Notifications.SchedulableTriggerInputTypes.DATE,

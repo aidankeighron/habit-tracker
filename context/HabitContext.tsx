@@ -214,6 +214,9 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       content: {
         title: "Habit Reminder",
         body: `It's been a while since you updated your ${type} habit!`,
+        threadIdentifier: 'habit_reminders_group',
+        group: 'habit_reminders_group',
+        groupId: 'habit_reminders_group',
       },
       trigger: { 
         type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, 
