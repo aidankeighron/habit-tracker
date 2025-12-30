@@ -1,5 +1,5 @@
+import notifee, { AndroidGroupAlertBehavior, AndroidImportance, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
@@ -52,12 +52,14 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
     // Create the custom channel group and channel
     if (Platform.OS === 'android') {
       (async () => {
-        await Notifications.setNotificationChannelGroupAsync('customGroup', {
+        await notifee.createChannelGroup({
+          id: 'customGroup',
           name: 'Scheduled Habits',
         });
-        await Notifications.setNotificationChannelAsync('customScheduled', {
+        await notifee.createChannel({
+          id: 'customScheduled',
           name: 'Scheduled Habits',
-          importance: Notifications.AndroidImportance.HIGH,
+          importance: AndroidImportance.HIGH,
           groupId: 'customGroup',
         });
       })()
@@ -115,20 +117,22 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   };
   
   const cancelNotificationsForId = async (id: string) => {
-    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-    for (const notification of scheduled) {
-      if (notification.content.data?.customNotificationId === id) {
-        await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    const scheduled = await notifee.getTriggerNotificationIds();
+    for (const notificationId of scheduled) {
+      // We check if the ID starts with our pattern or check data if possible. 
+      // Notifee getTriggerNotificationIds returns string[]. 
+      // We used custom-{id}-{YYYYMMDD}. 
+      if (notificationId.includes(`custom-${id}-`)) {
+        await notifee.cancelNotification(notificationId);
       }
     }
   };
   
   const resetCustomNotifications = async () => {
-    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-    for (const notification of scheduled) {
-      // Check if it's one of ours (has customNotificationId)
-      if (notification.content.data?.customNotificationId) {
-        await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    const scheduled = await notifee.getTriggerNotificationIds();
+    for (const notificationId of scheduled) {
+      if (notificationId.startsWith('custom-')) {
+         await notifee.cancelNotification(notificationId);
       }
     }
     // Re-schedule everything from scratch
@@ -138,15 +142,24 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   const scheduleAllNotifications = async (currentNotifications: CustomNotification[]) => {
     // 1. Clean up "orphaned" notifications (in case deletion failed previously or something desynced)
     // We can iterate all scheduled, check if their customNotificationId exists in current list.
-    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const scheduled = await notifee.getTriggerNotificationIds();
     const currentIds = new Set(currentNotifications.map(n => n.id));
     
-    for (const notification of scheduled) {
-      const nid = notification.content.data?.customNotificationId;
-      // Only touch our custom ones
-      if (nid && !currentIds.has(nid as string)) {
-        await Notifications.cancelScheduledNotificationAsync(notification.identifier);
-      }
+    for (const notificationId of scheduled) {
+        // notificationId format: custom-{n.id}-{date}
+        if (notificationId.startsWith('custom-')) {
+            const parts = notificationId.split('-');
+            // custom, id, date... might be complex if id has dashes. 
+            // Our ID generator in addNotification: Date.now().toString(36) + random
+            // No dashes in that ID usually? Date.now is alphanumeric.
+            // Let's assume ID is safe or we can use regex.
+            // Actually simpler: we can check if the ID matches any valid pattern from current list.
+            
+            const isValid = currentNotifications.some(n => notificationId.includes(`custom-${n.id}-`));
+            if (!isValid) {
+                await notifee.cancelNotification(notificationId);
+            }
+        }
     }
     
     // 2. Schedule for the next 30 days
@@ -250,29 +263,44 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
         if (shouldSchedule) {
           const identifier = `custom-${n.id}-${getLocalYYYYMMDD(targetDate)}`;
           
-          const isAlreadyScheduled = scheduled.some(s => s.identifier === identifier);
+          const isAlreadyScheduled = scheduled.includes(identifier);
           
           if (!isAlreadyScheduled) {
-            await Notifications.scheduleNotificationAsync({
-              content: {
+          if (!isAlreadyScheduled) {
+             await notifee.createTriggerNotification(
+              {
+                id: identifier,
                 title: n.title,
+                android: {
+                  channelId: 'customScheduled',
+                  color: hslToHex(n.colorHue, 100, 50),
+                  groupId: 'scheduled_habits_group',
+                  groupSummary: false, // In case we want a summary notification later
+                },
                 data: { customNotificationId: n.id },
-                color: hslToHex(n.colorHue, 100, 50),
-                threadIdentifier: 'scheduled_habits_group',
-                group: 'scheduled_habits_group',
-                groupId: 'scheduled_habits_group',
               },
-              trigger: {
-                type: Notifications.SchedulableTriggerInputTypes.DATE,
-                date: targetDateTime, 
-                channelId: 'customScheduled',
-              },
-              identifier,
-            });
+              {
+                type: TriggerType.TIMESTAMP,
+                timestamp: targetDateTime.getTime(),
+              }
+            );
+          }
           }
         }
       }
     }
+    // Ensure the summary notification exists
+    await notifee.displayNotification({
+      id: 'custom-group-summary',
+      title: 'Scheduled Habits',
+      android: {
+        channelId: 'customScheduled',
+        groupSummary: true,
+        groupId: 'scheduled_habits_group',
+        importance: AndroidImportance.LOW,
+        groupAlertBehavior: AndroidGroupAlertBehavior.CHILDREN,
+      },
+    });
   };
   
   return (

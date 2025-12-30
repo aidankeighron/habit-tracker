@@ -1,5 +1,5 @@
+import notifee, { AndroidGroupAlertBehavior, AndroidImportance, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import { requestWidgetUpdate } from 'react-native-android-widget';
@@ -31,15 +31,6 @@ const KEYS = {
   SETTINGS: 'habit_settings',
 };
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
 
 export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [history, setHistory] = useState<{
@@ -89,22 +80,19 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   async function registerForPushNotificationsAsync() {
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelGroupAsync('habitGroup', {
+      await notifee.createChannelGroup({
+        id: 'habitGroup',
         name: 'Habit Reminders',
       });
-      await Notifications.setNotificationChannelAsync('habitReminders', {
+      await notifee.createChannel({
+        id: 'habitReminders',
         name: 'Habit Reminders',
-        importance: Notifications.AndroidImportance.HIGH,
+        importance: AndroidImportance.HIGH,
         groupId: 'habitGroup',
       });
     }
     
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+    await notifee.requestPermission();
   }
   
   const loadData = async () => {
@@ -185,6 +173,19 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       scheduleReminder('stretch'),
       scheduleReminder('racing'),
     ]);
+    
+    // Ensure the summary notification exists
+    await notifee.displayNotification({
+        id: 'reminder-group-summary',
+        title: 'Habit Reminders',
+        android: {
+            channelId: 'habitReminders',
+            groupSummary: true,
+            groupId: 'habit_reminders_group',
+            importance: AndroidImportance.LOW,
+            groupAlertBehavior: AndroidGroupAlertBehavior.CHILDREN,
+        },
+    });
   };
   
   const scheduleReminder = async (type: HabitType) => {
@@ -199,34 +200,35 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const scheduleReminderForType = async (type: HabitType, lastUpdateStr: string, intervalHours: number) => {
     const identifier = `reminder-${type}`;
-    await Notifications.cancelScheduledNotificationAsync(identifier);
+    await notifee.cancelNotification(identifier);
     
     const lastUpdate = new Date(lastUpdateStr);
     const now = new Date();
     // Calculate trigger date
     const triggerDate = new Date(lastUpdate.getTime() + intervalHours * 60 * 60 * 1000);
     
-    let secondsUntil = (triggerDate.getTime() - now.getTime()) / 1000;
-    
-    if (secondsUntil <= 0) {
-      secondsUntil = 1; 
+    if (triggerDate.getTime() <= now.getTime()) {
+      // If it's already past due, maybe schedule for immediate or +1 min?
+      // Or just let it trigger now?
+      // The old logic: secondsUntil = 1.
+      triggerDate.setTime(now.getTime() + 1000);
     }
-    
-    await Notifications.scheduleNotificationAsync({
-      content: {
+
+    await notifee.createTriggerNotification(
+      {
+        id: identifier,
         title: "Habit Reminder",
         body: `It's been a while since you updated your ${type} habit!`,
-        threadIdentifier: 'habit_reminders_group',
-        group: 'habit_reminders_group',
-        groupId: 'habit_reminders_group',
+        android: {
+            channelId: 'habitReminders',
+            groupId: 'habit_reminders_group',
+        }
       },
-      trigger: { 
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, 
-        seconds: Math.max(1, Math.floor(secondsUntil)),
-        channelId: 'habitReminders'
-      },
-      identifier,
-    });
+      {
+        type: TriggerType.TIMESTAMP,
+        timestamp: triggerDate.getTime(),
+      }
+    );
   };
   
   const updateHabit = async (type: HabitType, value: number) => {
@@ -365,11 +367,11 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const resetHabitNotifications = async () => {
     // Cancel all habit reminders
     await Promise.all([
-      Notifications.cancelScheduledNotificationAsync('reminder-water'),
-      Notifications.cancelScheduledNotificationAsync('reminder-food'),
-      Notifications.cancelScheduledNotificationAsync('reminder-workout'),
-      Notifications.cancelScheduledNotificationAsync('reminder-stretch'),
-      Notifications.cancelScheduledNotificationAsync('reminder-racing'),
+      notifee.cancelNotification('reminder-water'),
+      notifee.cancelNotification('reminder-food'),
+      notifee.cancelNotification('reminder-workout'),
+      notifee.cancelNotification('reminder-stretch'),
+      notifee.cancelNotification('reminder-racing'),
     ]);
     // Re-schedule
     await refreshNotifications();
@@ -377,10 +379,11 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const updateWidgets = async (
     currentHistory: typeof history,
-    currentSettings: typeof settings
+    currentSettings: typeof settings,
+    customDate?: string // Optional date override
   ) => {
     try {
-        const currentDate = today;
+        const currentDate = customDate || today;
         const currentHabits = {
             water: currentHistory.water[currentDate] || 0,
             food: currentHistory.food[currentDate] || 0,
