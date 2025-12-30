@@ -138,6 +138,42 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (storedLastUpdated) {
         setLastUpdated(JSON.parse(storedLastUpdated));
       }
+
+      // Initial widget update with loaded data
+      const loadedHistory = {
+        water: water ? JSON.parse(water) : {},
+        food: food ? JSON.parse(food) : {},
+        workout: workout ? JSON.parse(workout) : {},
+        stretch: stretch ? JSON.parse(stretch) : {},
+        racing: racing ? JSON.parse(racing) : {},
+      };
+
+      const loadedSettings = storedSettings ? JSON.parse(storedSettings) : {
+         totals: { water: 8, food: 3, workout: 30, stretch: 2, racing: 1 },
+         notifications: { water: 2, food: 4, workout: 16, stretch: 6, racing: -1 },
+         rolloverHour: 0,
+      };
+      
+      // Ensure defaults in loadedSettings if we just constructed it or parsed partial
+      if (!loadedSettings.totals) loadedSettings.totals = { water: 8, food: 3, workout: 30, stretch: 2, racing: 1 };
+      if (!loadedSettings.notifications) loadedSettings.notifications = { water: 2, food: 4, workout: 16, stretch: 6, racing: -1 };
+      if (loadedSettings.rolloverHour === undefined) loadedSettings.rolloverHour = 0;
+      if (loadedSettings.totals.racing === undefined) loadedSettings.totals.racing = 1;
+
+      // We need to pass these to updateWidgets
+      // But updateWidgets expects the state shape.
+      // updateWidgets uses 'today' state, but 'today' might not be set correctly yet if we just calculated it in loadData (via setToday).
+      // However, we can calculate 'today' locally.
+      const rolHour = loadedSettings.rolloverHour;
+      const effectiveDate = getEffectiveDate(rolHour);
+      
+      // We can temporarily override 'today' in updateWidgets or just pass it as arg?
+      // updateWidgets uses 'today' from state closure.
+      // Let's modify updateWidgets to accept optional date or just refactor.
+      // Refactoring updateWidgets to take date as arg.
+      
+      updateWidgets(loadedHistory, loadedSettings, effectiveDate);
+
     } catch (e) {
       console.error('Failed to load habit data', e);
     }
