@@ -2,10 +2,8 @@ import notifee, { AndroidGroupAlertBehavior, AndroidImportance, TriggerType } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
-import { requestWidgetUpdate } from 'react-native-android-widget';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
-import { renderWidgetIndependent } from '../widget-task-handler';
 
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
@@ -135,9 +133,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (storedLastUpdated) {
         setLastUpdated(JSON.parse(storedLastUpdated));
       }
-
-      updateWidgets();
-
     } catch (e) {
       console.error('Failed to load habit data', e);
     }
@@ -252,7 +247,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await AsyncStorage.setItem(KEYS.LAST_UPDATED, JSON.stringify(newLastUpdated));
     
     scheduleReminderForType(type, nowStr, settings.notifications[type]);
-    updateWidgets();
   };
   
   const editHistory = async (type: HabitType, date: string, value: number) => {
@@ -267,7 +261,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'racing') key = KEYS.RACING;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
-    updateWidgets();
   };
   
   const updateDailyHistory = async (date: string, values: DailyHabitData) => {
@@ -290,7 +283,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       AsyncStorage.setItem(KEYS.STRETCH, JSON.stringify(newHistory.stretch)),
       AsyncStorage.setItem(KEYS.RACING, JSON.stringify(newHistory.racing)),
     ]);
-    updateWidgets();
   };
   
   const updateTotal = async (type: HabitType, total: number) => {
@@ -375,27 +367,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     ]);
     // Re-schedule
     await refreshNotifications();
-  };
-  
-  const updateWidgets = async () => {
-    try {
-        // Update WaterFoodHomeWidget (Large only as per app.json)
-        await requestWidgetUpdate({
-            widgetName: 'HomeWaterFoodLarge',
-            renderWidget: () => renderWidgetIndependent('HomeWaterFoodLarge') as any,
-            widgetNotFound: () => {}
-        });
-
-        // Update StatsWaterFoodLarge
-        await requestWidgetUpdate({
-            widgetName: 'StatsWaterFoodLarge',
-            renderWidget: () => renderWidgetIndependent('StatsWaterFoodLarge') as any,
-            widgetNotFound: () => {}
-        });
-
-    } catch (e) {
-        console.error('Failed to update widgets', e);
-    }
   };
   
   const habits: DailyHabitData = {
