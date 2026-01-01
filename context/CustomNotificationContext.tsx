@@ -1,4 +1,4 @@
-import notifee, { AndroidImportance, TriggerType } from '@notifee/react-native';
+import notifee, { AndroidImportance, EventType, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
@@ -76,8 +76,18 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
       appState.current = nextAppState;
     });
     
+    // Foreground listener for actions
+    const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
+      if (type === EventType.ACTION_PRESS && detail.pressAction?.id === 'completed') {
+        if (detail.notification?.id) {
+          notifee.cancelNotification(detail.notification.id);
+        }
+      }
+    });
+
     return () => {
       subscription.remove();
+      unsubscribe();
     };
   }, [notifications]);
   
@@ -277,6 +287,13 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                   color: hslToHex(n.colorHue, 100, 50),
                   groupId: 'scheduled_habits_group',
                   groupSummary: false, // In case we want a summary notification later
+                  ongoing: true,
+                  actions: [
+                    {
+                      title: 'Completed',
+                      pressAction: { id: 'completed' },
+                    },
+                  ],
                 },
                 data: { customNotificationId: n.id },
               },
