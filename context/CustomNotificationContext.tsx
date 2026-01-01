@@ -1,5 +1,6 @@
 import notifee, { AndroidImportance, EventType, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
@@ -139,6 +140,9 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   };
   
   const resetCustomNotifications = async () => {
+    // Clear legacy/expo notifications
+    await Notifications.cancelAllScheduledNotificationsAsync();
+
     const scheduled = await notifee.getTriggerNotificationIds();
     for (const notificationId of scheduled) {
       if (notificationId.startsWith('custom-')) {
