@@ -273,6 +273,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                 title: n.title,
                 android: {
                   channelId: 'customScheduled',
+                  smallIcon: 'custom_notification_icon',
                   color: hslToHex(n.colorHue, 100, 50),
                   groupId: 'scheduled_habits_group',
                   groupSummary: false, // In case we want a summary notification later
@@ -295,6 +296,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
       title: 'Scheduled Habits',
       android: {
         channelId: 'customScheduled',
+        smallIcon: 'custom_notification_icon',
         groupSummary: true,
         groupId: 'scheduled_habits_group',
         importance: AndroidImportance.LOW,
