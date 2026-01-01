@@ -3,7 +3,7 @@
   "expo": {
     "name": "Habit Tracker",
     "slug": "habit-tracker",
-    "version": "1.0.14",
+    "version": "1.0.15",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -38,30 +38,7 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withAndroidCustomNotificationIcon",
-      [
-        "react-native-android-widget",
-        {
-          "widgets": [
-            {
-              "name": "HomeWaterFoodLarge",
-              "label": "Water & Food",
-              "minWidth": "260dp",
-              "minHeight": "120dp",
-              "description": "Track Water and Food",
-              "previewImage": "./assets/images/adaptive-icon.png"
-            },
-            {
-              "name": "StatsWaterFoodLarge",
-              "label": "Stats W/F",
-              "minWidth": "260dp",
-              "minHeight": "120dp",
-              "description": "Water and Food Stats",
-              "previewImage": "./assets/images/adaptive-icon.png"
-            }
-          ]
-        }
-      ]
+      "./plugins/withAndroidCustomNotificationIcon"
     ],
     "experiments": {
       "typedRoutes": true
