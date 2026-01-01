@@ -3,12 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 import { requestWidgetUpdate } from 'react-native-android-widget';
-import { HomeWidget } from '../components/widgets/HomeWidget';
-import { StatsWidget } from '../components/widgets/StatsWidget';
-import { WaterFoodHomeWidget } from '../components/widgets/WaterFoodHomeWidget';
-import { WaterFoodStatsWidget } from '../components/widgets/WaterFoodStatsWidget';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
+import { renderWidgetIndependent } from '../widget-task-handler';
 
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
@@ -139,40 +136,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setLastUpdated(JSON.parse(storedLastUpdated));
       }
 
-      // Initial widget update with loaded data
-      const loadedHistory = {
-        water: water ? JSON.parse(water) : {},
-        food: food ? JSON.parse(food) : {},
-        workout: workout ? JSON.parse(workout) : {},
-        stretch: stretch ? JSON.parse(stretch) : {},
-        racing: racing ? JSON.parse(racing) : {},
-      };
-
-      const loadedSettings = storedSettings ? JSON.parse(storedSettings) : {
-         totals: { water: 8, food: 3, workout: 30, stretch: 2, racing: 1 },
-         notifications: { water: 2, food: 4, workout: 16, stretch: 6, racing: -1 },
-         rolloverHour: 0,
-      };
-      
-      // Ensure defaults in loadedSettings if we just constructed it or parsed partial
-      if (!loadedSettings.totals) loadedSettings.totals = { water: 8, food: 3, workout: 30, stretch: 2, racing: 1 };
-      if (!loadedSettings.notifications) loadedSettings.notifications = { water: 2, food: 4, workout: 16, stretch: 6, racing: -1 };
-      if (loadedSettings.rolloverHour === undefined) loadedSettings.rolloverHour = 0;
-      if (loadedSettings.totals.racing === undefined) loadedSettings.totals.racing = 1;
-
-      // We need to pass these to updateWidgets
-      // But updateWidgets expects the state shape.
-      // updateWidgets uses 'today' state, but 'today' might not be set correctly yet if we just calculated it in loadData (via setToday).
-      // However, we can calculate 'today' locally.
-      const rolHour = loadedSettings.rolloverHour;
-      const effectiveDate = getEffectiveDate(rolHour);
-      
-      // We can temporarily override 'today' in updateWidgets or just pass it as arg?
-      // updateWidgets uses 'today' from state closure.
-      // Let's modify updateWidgets to accept optional date or just refactor.
-      // Refactoring updateWidgets to take date as arg.
-      
-      updateWidgets(loadedHistory, loadedSettings, effectiveDate);
+      updateWidgets();
 
     } catch (e) {
       console.error('Failed to load habit data', e);
@@ -288,7 +252,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await AsyncStorage.setItem(KEYS.LAST_UPDATED, JSON.stringify(newLastUpdated));
     
     scheduleReminderForType(type, nowStr, settings.notifications[type]);
-    updateWidgets(newHistory, settings);
+    updateWidgets();
   };
   
   const editHistory = async (type: HabitType, date: string, value: number) => {
@@ -303,7 +267,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'racing') key = KEYS.RACING;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
-    updateWidgets(newHistory, settings);
+    updateWidgets();
   };
   
   const updateDailyHistory = async (date: string, values: DailyHabitData) => {
@@ -326,7 +290,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       AsyncStorage.setItem(KEYS.STRETCH, JSON.stringify(newHistory.stretch)),
       AsyncStorage.setItem(KEYS.RACING, JSON.stringify(newHistory.racing)),
     ]);
-    updateWidgets(newHistory, settings);
+    updateWidgets();
   };
   
   const updateTotal = async (type: HabitType, total: number) => {
@@ -413,96 +377,19 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await refreshNotifications();
   };
   
-  const updateWidgets = async (
-    currentHistory: typeof history,
-    currentSettings: typeof settings,
-    customDate?: string // Optional date override
-  ) => {
+  const updateWidgets = async () => {
     try {
-        const currentDate = customDate || today;
-        const currentHabits = {
-            water: currentHistory.water[currentDate] || 0,
-            food: currentHistory.food[currentDate] || 0,
-            workout: currentHistory.workout[currentDate] || 0,
-            stretch: currentHistory.stretch[currentDate] || 0,
-            racing: currentHistory.racing[currentDate] || 0,
-        };
-        const goals = currentSettings.totals;
-
-        // Update HomeWidget
-        requestWidgetUpdate({
-            widgetName: 'HomeWidget',
-            renderWidget: () => <HomeWidget habits={currentHabits} goals={goals} />,
-            widgetNotFound: () => {
-                // Widget not added by user, ignore
-            }
-        });
-
-        // Calculate averages for StatsWidget (Last 7 days)
-        // Similar logic to Stats screen but simplified
-        const getAvg = (type: HabitType) => {
-             // simplified: last 7 days including today? or just past 7 days?
-             // let's grab last 7 days keys
-             // actually we need to compute keys.
-             // For simplicity, let's just accept we might not have all keys and loop back 7 days.
-             let sum = 0;
-             const date = new Date(); // use real time or today? use 'today' string logic
-             // logic is repeated from stats screen a bit...
-             // For now let's just pass 0s if too complex, but we want real data.
-             
-             // Simple loop
-             for (let i = 0; i < 7; i++) {
-                 const d = new Date();
-                 d.setDate(d.getDate() - i);
-                 const dateStr = getLocalYYYYMMDD(d);
-                 sum += currentHistory[type][dateStr] || 0;
-             }
-             return sum / 7;
-        };
-
-        const averages = {
-            water: getAvg('water'),
-            food: getAvg('food'),
-            workout: getAvg('workout'),
-            stretch: getAvg('stretch'),
-            racing: getAvg('racing'),
-        };
-
-        // Update StatsWidget
-        requestWidgetUpdate({
-            widgetName: 'StatsWidget',
-            renderWidget: () => <StatsWidget averages={averages} />,
-            widgetNotFound: () => {}
-        });
-
-        // Update WaterFoodHomeWidget (Small & Large)
-        const waterFoodHabits = { water: currentHabits.water, food: currentHabits.food };
-        const waterFoodGoals = { water: goals.water, food: goals.food };
-        
-        requestWidgetUpdate({
-            widgetName: 'HomeWaterFoodSmall',
-            renderWidget: () => <WaterFoodHomeWidget habits={waterFoodHabits} goals={waterFoodGoals} />,
-            widgetNotFound: () => {}
-        });
-        
-        requestWidgetUpdate({
+        // Update WaterFoodHomeWidget (Large only as per app.json)
+        await requestWidgetUpdate({
             widgetName: 'HomeWaterFoodLarge',
-            renderWidget: () => <WaterFoodHomeWidget habits={waterFoodHabits} goals={waterFoodGoals} />,
+            renderWidget: () => renderWidgetIndependent('HomeWaterFoodLarge') as any,
             widgetNotFound: () => {}
         });
 
-        // Update WaterFoodStatsWidget (Small & Large)
-        const waterFoodAverages = { water: averages.water, food: averages.food };
-
-        requestWidgetUpdate({
-            widgetName: 'StatsWaterFoodSmall',
-            renderWidget: () => <WaterFoodStatsWidget averages={waterFoodAverages} />,
-            widgetNotFound: () => {}
-        });
-
-        requestWidgetUpdate({
+        // Update StatsWaterFoodLarge
+        await requestWidgetUpdate({
             widgetName: 'StatsWaterFoodLarge',
-            renderWidget: () => <WaterFoodStatsWidget averages={waterFoodAverages} />,
+            renderWidget: () => renderWidgetIndependent('StatsWaterFoodLarge') as any,
             widgetNotFound: () => {}
         });
 
