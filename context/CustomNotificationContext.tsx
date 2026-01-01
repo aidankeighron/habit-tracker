@@ -292,6 +292,9 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                   groupId: 'scheduled_habits_group',
                   groupSummary: false, // In case we want a summary notification later
                   ongoing: true,
+                  autoCancel: false,
+                  asForegroundService: true,
+                  colorized: true,
                   actions: [
                     {
                       title: 'Completed',
