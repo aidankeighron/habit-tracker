@@ -179,6 +179,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             groupId: 'habit_reminders_group',
             importance: AndroidImportance.LOW,
             groupAlertBehavior: AndroidGroupAlertBehavior.CHILDREN,
+            smallIcon: 'notification_icon',
         },
     });
   };
@@ -217,6 +218,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         android: {
             channelId: 'habitReminders',
             groupId: 'habit_reminders_group',
+            smallIcon: 'notification_icon',
         }
       },
       {

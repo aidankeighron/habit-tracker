@@ -30,6 +30,17 @@ const withAndroidCustomNotificationIcon = (config) => {
         console.warn(`[withAndroidCustomNotificationIcon] Source icon not found at ${iconPath}`);
       }
 
+      // Also copy the standard notification icon
+      const standardIconPath = path.join(projectRoot, 'assets', 'images', 'notification-icon.png');
+      const standardDestination = path.join(drawableDir, 'notification_icon.png');
+
+      if (fs.existsSync(standardIconPath)) {
+        fs.copyFileSync(standardIconPath, standardDestination);
+        console.log(`[withAndroidCustomNotificationIcon] Copied ${standardIconPath} to ${standardDestination}`);
+      } else {
+        console.warn(`[withAndroidCustomNotificationIcon] Source icon not found at ${standardIconPath}`);
+      }
+
       return config;
     },
   ]);
