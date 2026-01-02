@@ -1,4 +1,4 @@
-import notifee, { AndroidGroupAlertBehavior, AndroidImportance, TriggerType } from '@notifee/react-native';
+import notifee, { AndroidImportance, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
@@ -169,19 +169,7 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       scheduleReminder('racing'),
     ]);
     
-    // Ensure the summary notification exists
-    await notifee.displayNotification({
-        id: 'reminder-group-summary',
-        title: 'Habit Reminders',
-        android: {
-            channelId: 'habitReminders',
-            groupSummary: true,
-            groupId: 'habit_reminders_group',
-            importance: AndroidImportance.LOW,
-            groupAlertBehavior: AndroidGroupAlertBehavior.CHILDREN,
-            smallIcon: 'notification_icon',
-        },
-    });
+
   };
   
   const scheduleReminder = async (type: HabitType) => {
