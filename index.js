@@ -1,12 +1,6 @@
 import notifee, { EventType } from '@notifee/react-native';
 import 'expo-router/entry';
 
-notifee.registerForegroundService((notification) => {
-  return new Promise(() => {
-    // Long running task...
-  });
-});
-
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   const { notification, pressAction } = detail;
 

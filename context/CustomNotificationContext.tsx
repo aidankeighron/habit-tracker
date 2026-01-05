@@ -290,11 +290,6 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                   smallIcon: 'custom_notification_icon',
                   color: hslToHex(n.colorHue, 100, 50),
                   groupId: 'scheduled_habits_group',
-                  groupSummary: false, // In case we want a summary notification later
-                  ongoing: true,
-                  autoCancel: false,
-                  asForegroundService: true,
-                  colorized: true,
                   actions: [
                     {
                       title: 'Completed',
