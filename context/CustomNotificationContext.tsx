@@ -302,6 +302,9 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
               {
                 type: TriggerType.TIMESTAMP,
                 timestamp: targetDateTime.getTime(),
+                alarmManager: {
+                  allowWhileIdle: true,
+                },
               }
             );
           }
