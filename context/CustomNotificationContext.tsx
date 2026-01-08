@@ -280,7 +280,6 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
           const isAlreadyScheduled = scheduled.includes(identifier);
           
           if (!isAlreadyScheduled) {
-          if (!isAlreadyScheduled) {
              await notifee.createTriggerNotification(
               {
                 id: identifier,
@@ -307,7 +306,6 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                 },
               }
             );
-          }
           }
         }
       }
