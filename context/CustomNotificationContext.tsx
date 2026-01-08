@@ -1,4 +1,4 @@
-import notifee, { AndroidImportance, EventType, TriggerType } from '@notifee/react-native';
+import notifee, { AlarmType, AndroidImportance, EventType, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
@@ -302,7 +302,7 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
                 type: TriggerType.TIMESTAMP,
                 timestamp: targetDateTime.getTime(),
                 alarmManager: {
-                  allowWhileIdle: true,
+                  type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
                 },
               }
             );
