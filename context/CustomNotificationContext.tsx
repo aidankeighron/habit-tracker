@@ -48,23 +48,25 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   useEffect(() => {
     loadNotifications();
   }, []);
+
+  const ensureChannelExists = async () => {
+    if (Platform.OS === 'android') {
+      await notifee.createChannelGroup({
+        id: 'customGroup',
+        name: 'Scheduled Habits',
+      });
+      await notifee.createChannel({
+        id: 'customScheduled',
+        name: 'Scheduled Habits',
+        importance: AndroidImportance.HIGH,
+        groupId: 'customGroup',
+      });
+    }
+  };
   
   useEffect(() => {
     // Create the custom channel group and channel
-    if (Platform.OS === 'android') {
-      (async () => {
-        await notifee.createChannelGroup({
-          id: 'customGroup',
-          name: 'Scheduled Habits',
-        });
-        await notifee.createChannel({
-          id: 'customScheduled',
-          name: 'Scheduled Habits',
-          importance: AndroidImportance.HIGH,
-          groupId: 'customGroup',
-        });
-      })()
-    }
+    ensureChannelExists();
     
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
@@ -98,6 +100,8 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
       if (stored) {
         const parsed = JSON.parse(stored);
         setNotifications(parsed);
+        // Ensure channel exists before scheduling
+        await ensureChannelExists();
         // We also want to ensure scheduling is up to date when we load up
         scheduleAllNotifications(parsed);
       }
