@@ -89,62 +89,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     await notifee.requestPermission();
   }
-
-  const scheduleReminderForType = async (type: HabitType, lastUpdateStr: string, intervalHours: number) => {
-    const identifier = `reminder-${type}`;
-    await notifee.cancelNotification(identifier);
-    
-    const lastUpdate = new Date(lastUpdateStr);
-    const now = new Date();
-    // Calculate trigger date
-    const triggerDate = new Date(lastUpdate.getTime() + intervalHours * 60 * 60 * 1000);
-    
-    if (triggerDate.getTime() <= now.getTime()) {
-      // If it's already past due, maybe schedule for immediate or +1 min?
-      // Or just let it trigger now?
-      // The old logic: secondsUntil = 1.
-      triggerDate.setTime(now.getTime() + 1000);
-    }
-
-    await notifee.createTriggerNotification(
-      {
-        id: identifier,
-        title: "Habit Reminder",
-        body: `It's been a while since you updated your ${type} habit!`,
-        android: {
-            channelId: 'habitReminders',
-            groupId: 'habit_reminders_group',
-            smallIcon: 'notification_icon',
-        }
-      },
-      {
-        type: TriggerType.TIMESTAMP,
-        timestamp: triggerDate.getTime(),
-        alarmManager: {
-          type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
-        },
-      }
-    );
-  };
-
-  const refreshNotificationsDirectly = async (currentSettings: HabitSettings, currentLastUpdated: any) => {
-    // Helper to avoid state dependency race conditions during load
-    const scheduleType = async (type: HabitType) => {
-      const lastUpdateStr = currentLastUpdated[type];
-      const intervalHours = currentSettings.notifications[type];
-      if (lastUpdateStr && intervalHours && intervalHours > 0) {
-        await scheduleReminderForType(type, lastUpdateStr, intervalHours);
-      }
-    };
-
-    await Promise.all([
-      scheduleType('water'),
-      scheduleType('food'),
-      scheduleType('workout'),
-      scheduleType('stretch'),
-      scheduleType('racing'),
-    ]);
-  };
   
   const loadData = async () => {
     try {
@@ -189,28 +133,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (storedLastUpdated) {
         setLastUpdated(JSON.parse(storedLastUpdated));
       }
-      
-      // Ensure notifications are scheduled on fresh load
-      // We need to wait a tick for state to settle? No, we can just use the parsed data directly.
-      // But refreshNotifications uses state `lastUpdated` and `settings`.
-      // It's better to trigger it after state updates, or pass the data directly.
-      // Let's rely on the useEffect below that depends on [lastUpdated, settings] ?
-      // actually that useEffect only runs on AppState change (background -> active).
-      // We should call it here using the data we just loaded.
-      
-      const loadedSettings = storedSettings ? JSON.parse(storedSettings) : {
-        totals: { water: 8, food: 3, workout: 30, stretch: 2, racing: 1 },
-        notifications: { water: 2, food: 4, workout: 16, stretch: 6, racing: -1 },
-        rolloverHour: 0,
-      };
-      
-      const loadedLastUpdated = storedLastUpdated ? JSON.parse(storedLastUpdated) : {
-        water: null, food: null, workout: null, stretch: null, racing: null
-      };
-      
-      // We can create a helper calling the internal logic without waiting for state
-      await refreshNotificationsDirectly(loadedSettings, loadedLastUpdated);
-      
     } catch (e) {
       console.error('Failed to load habit data', e);
     }
@@ -238,12 +160,16 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [lastUpdated, settings]);
   
-
-
-
-  
   const refreshNotifications = async () => {
-    await refreshNotificationsDirectly(settings, lastUpdated);
+    await Promise.all([
+      scheduleReminder('water'),
+      scheduleReminder('food'),
+      scheduleReminder('workout'),
+      scheduleReminder('stretch'),
+      scheduleReminder('racing'),
+    ]);
+    
+
   };
   
   const scheduleReminder = async (type: HabitType) => {
@@ -256,7 +182,42 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     scheduleReminderForType(type, lastUpdateStr, intervalHours);
   };
   
+  const scheduleReminderForType = async (type: HabitType, lastUpdateStr: string, intervalHours: number) => {
+    const identifier = `reminder-${type}`;
+    await notifee.cancelNotification(identifier);
+    
+    const lastUpdate = new Date(lastUpdateStr);
+    const now = new Date();
+    // Calculate trigger date
+    const triggerDate = new Date(lastUpdate.getTime() + intervalHours * 60 * 60 * 1000);
+    
+    if (triggerDate.getTime() <= now.getTime()) {
+      // If it's already past due, maybe schedule for immediate or +1 min?
+      // Or just let it trigger now?
+      // The old logic: secondsUntil = 1.
+      triggerDate.setTime(now.getTime() + 1000);
+    }
 
+    await notifee.createTriggerNotification(
+      {
+        id: identifier,
+        title: "Habit Reminder",
+        body: `It's been a while since you updated your ${type} habit!`,
+        android: {
+            channelId: 'habitReminders',
+            groupId: 'habit_reminders_group',
+            smallIcon: 'notification_icon',
+        }
+      },
+      {
+        type: TriggerType.TIMESTAMP,
+        timestamp: triggerDate.getTime(),
+        alarmManager: {
+          type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
+        },
+      }
+    );
+  };
   
   const updateHabit = async (type: HabitType, value: number) => {
     // Use the reactive 'today' state
