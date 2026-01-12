@@ -198,11 +198,19 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       triggerDate.setTime(now.getTime() + 1000);
     }
 
+    let title: string = type;
+    if (type == "food") {
+      title = "Eat Food"
+    }
+    else if (type == "water") {
+      title = "Drink Water"
+    }
+
     await notifee.createTriggerNotification(
       {
         id: identifier,
-        title: "Habit Reminder",
-        body: `It's been a while since you updated your ${type} habit!`,
+        title,
+        body: `Do your habit!`,
         android: {
             channelId: 'habitReminders',
             groupId: 'habit_reminders_group',
