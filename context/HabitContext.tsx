@@ -1,4 +1,4 @@
-import notifee, { AlarmType, AndroidImportance, TriggerType } from '@notifee/react-native';
+import notifee, { AndroidImportance, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
@@ -212,9 +212,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {
         type: TriggerType.TIMESTAMP,
         timestamp: triggerDate.getTime(),
-        alarmManager: {
-          type: AlarmType.SET_EXACT_AND_ALLOW_WHILE_IDLE,
-        },
       }
     );
   };
