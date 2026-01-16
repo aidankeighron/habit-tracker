@@ -104,7 +104,7 @@ export default function StatsScreen() {
           }}
           bezier
           style={styles.chart}
-          withInnerLines={false}
+          withVerticalLines={false}
           withOuterLines={false}
           fromZero={true}
         />
