@@ -104,8 +104,6 @@ export default function StatsScreen() {
           }}
           bezier
           style={styles.chart}
-          withVerticalLines={false}
-          withOuterLines={false}
           fromZero={true}
         />
         <Text style={[styles.unitLabel, { color: colorTheme.dark }]}>{unit}</Text>
