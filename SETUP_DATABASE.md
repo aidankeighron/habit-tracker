@@ -47,9 +47,3 @@ CREATE POLICY "Allow public access" ON public.habits
 ```
 
 4. Click **Run**.
-
-## 4. Install Dependencies
-In your project folder, run:
-```bash
-npm install @supabase/supabase-js react-native-url-polyfill
-```
