@@ -436,12 +436,8 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     racing: history.racing[today] || 0,
   };
   
-  const syncHabits = async () => {
-    await syncToPostgres(history);
-  };
-
   return (
-    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, updateHabitTotals, editHistory, updateDailyHistory, updateNotificationInterval, updateNotificationIntervals, updateRolloverHour, resetHabitNotifications, syncHabits } as any}>
+    <HabitContext.Provider value={{ habits, history, settings, lastUpdated, today, updateHabit, updateTotal, updateHabitTotals, editHistory, updateDailyHistory, updateNotificationInterval, updateNotificationIntervals, updateRolloverHour, resetHabitNotifications } as any}>
     {children}
     </HabitContext.Provider>
   );
