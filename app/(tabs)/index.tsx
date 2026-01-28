@@ -8,7 +8,19 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useHabits } from '@/context/HabitContext';
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
+
 export default function HomeScreen() {
+  const { syncHabits } = useHabits();
+
+  useFocusEffect(
+    useCallback(() => {
+      syncHabits();
+    }, [])
+  );
+
   return (
     <SafeAreaView style={[styles.container, { paddingTop: 10 }]} edges={['top']}>
       <WaterSection />
