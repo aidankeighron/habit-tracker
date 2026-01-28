@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { AppState, Platform } from 'react-native';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
+import { supabase } from '../utils/supabase';
 
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
@@ -90,6 +91,44 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await notifee.requestPermission();
   }
   
+  const syncToPostgres = async (allHistory: { [key: string]: HabitHistory }) => {
+    try {
+      let userId = await AsyncStorage.getItem('user_id');
+      if (!userId) {
+        userId = 'user_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+        await AsyncStorage.setItem('user_id', userId);
+      }
+
+      const upsertData: any[] = [];
+      const types = ['water', 'food', 'workout', 'stretch', 'racing'];
+      
+      types.forEach(type => {
+        const historyData = allHistory[type];
+        if (historyData) {
+            Object.entries(historyData).forEach(([date, value]) => {
+                upsertData.push({
+                    user_id: userId,
+                    date: date,
+                    habit_type: type,
+                    value: Number(value),
+                    updated_at: new Date().toISOString()
+                });
+            });
+        }
+      });
+
+      if (upsertData.length > 0) {
+          // Chunking to avoid payload limit (if necessary, though 5000 rows is usually ok)
+          // For safety, we can send in batches of 1000? Supabase handles large bodies well usually.
+          const { error } = await supabase.from('habits').upsert(upsertData, { onConflict: 'user_id,date,habit_type' });
+          if (error) console.error('Supabase Sync Error:', error.message);
+          else console.log('Synced', upsertData.length, 'rows to Supabase');
+      }
+    } catch (err) {
+        console.error('Sync failed', err);
+    }
+  };
+
   const loadData = async () => {
     try {
       const [water, food, workout, stretch, racing, storedSettings, storedLastUpdated] = await Promise.all([
@@ -102,13 +141,24 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         AsyncStorage.getItem(KEYS.LAST_UPDATED),
       ]);
       
-      setHistory({
-        water: water ? JSON.parse(water) : {},
-        food: food ? JSON.parse(food) : {},
-        workout: workout ? JSON.parse(workout) : {},
-        stretch: stretch ? JSON.parse(stretch) : {},
-        racing: racing ? JSON.parse(racing) : {},
-      });
+      const parsedWater = water ? JSON.parse(water) : {};
+      const parsedFood = food ? JSON.parse(food) : {};
+      const parsedWorkout = workout ? JSON.parse(workout) : {};
+      const parsedStretch = stretch ? JSON.parse(stretch) : {};
+      const parsedRacing = racing ? JSON.parse(racing) : {};
+
+      const fullHistory = {
+        water: parsedWater,
+        food: parsedFood,
+        workout: parsedWorkout,
+        stretch: parsedStretch,
+        racing: parsedRacing,
+      };
+
+      setHistory(fullHistory);
+
+      // Trigger sync
+      syncToPostgres(fullHistory);
       
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings);
