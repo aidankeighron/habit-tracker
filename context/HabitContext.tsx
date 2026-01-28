@@ -118,8 +118,6 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
 
       if (upsertData.length > 0) {
-          // Chunking to avoid payload limit (if necessary, though 5000 rows is usually ok)
-          // For safety, we can send in batches of 1000? Supabase handles large bodies well usually.
           const { error } = await supabase.from('habits').upsert(upsertData, { onConflict: 'user_id,date,habit_type' });
           if (error) console.error('Supabase Sync Error:', error.message);
           else console.log('Synced', upsertData.length, 'rows to Supabase');
