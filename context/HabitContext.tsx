@@ -91,12 +91,25 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // await notifee.requestPermission();
   }
   
+    const ensureAuthenticated = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) return session.user.id;
+      
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) {
+        console.error('Supabase Auth Error:', error.message);
+        return null; // Return null if auth fails (e.g. Anon disabled)
+      }
+      return data.user?.id;
+    };
+
   const syncToPostgres = async (allHistory: { [key: string]: HabitHistory }) => {
     try {
-      let userId = await AsyncStorage.getItem('user_id');
+      const userId = await ensureAuthenticated();
+      
       if (!userId) {
-        userId = 'user_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
-        await AsyncStorage.setItem('user_id', userId);
+        console.error('Cannot sync: User not authenticated. Enable Anonymous Sign-ins in Supabase or log in.');
+        return;
       }
 
       const upsertData: any[] = [];
