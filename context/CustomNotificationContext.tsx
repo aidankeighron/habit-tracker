@@ -317,4 +317,12 @@ export const CustomNotificationProvider: React.FC<{ children: React.ReactNode }>
   );
 };
 
+export const useCustomNotifications = () => {
+  const context = React.useContext(CustomNotificationContext);
+  if (!context) {
+    throw new Error('useCustomNotifications must be used within a CustomNotificationProvider');
+  }
+  return context;
+};
+
 
