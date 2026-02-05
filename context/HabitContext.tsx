@@ -140,6 +140,46 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const syncHabitEntry = async (type: HabitType, date: string, value: number) => {
+    try {
+      const userId = await ensureAuthenticated();
+      if (!userId) return;
+
+      const payload = {
+        user_id: userId,
+        date: date,
+        habit_type: type,
+        value: Number(value),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase.from('habits').upsert(payload, { onConflict: 'user_id,date,habit_type' });
+      if (error) console.error('Supabase Single Sync Error:', error.message);
+    } catch (err) {
+      console.error('Single Sync failed', err);
+    }
+  };
+
+  const syncDailyHabits = async (date: string, values: DailyHabitData) => {
+    try {
+        const userId = await ensureAuthenticated();
+        if (!userId) return;
+
+        const upsertData = Object.entries(values).map(([type, value]) => ({
+            user_id: userId,
+            date: date,
+            habit_type: type,
+            value: Number(value),
+            updated_at: new Date().toISOString()
+        }));
+        
+        const { error } = await supabase.from('habits').upsert(upsertData, { onConflict: 'user_id,date,habit_type' });
+        if (error) console.error('Supabase Daily Sync Error:', error.message);
+    } catch (err) {
+        console.error('Daily Sync failed', err);
+    }
+  };
+
   const loadData = async () => {
     try {
       const [water, food, workout, stretch, racing, storedSettings, storedLastUpdated] = await Promise.all([
@@ -306,6 +346,9 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await AsyncStorage.setItem(KEYS.LAST_UPDATED, JSON.stringify(newLastUpdated));
     
     scheduleReminderForType(type, nowStr, settings.notifications[type]);
+    
+    // Sync to Supabase
+    syncHabitEntry(type, today, value);
   };
   
   const editHistory = async (type: HabitType, date: string, value: number) => {
@@ -320,6 +363,9 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (type === 'racing') key = KEYS.RACING;
     
     await AsyncStorage.setItem(key, JSON.stringify(newHistory[type]));
+    
+    // Sync to Supabase
+    syncHabitEntry(type, date, value);
   };
   
   const updateDailyHistory = async (date: string, values: DailyHabitData) => {
@@ -342,6 +388,9 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       AsyncStorage.setItem(KEYS.STRETCH, JSON.stringify(newHistory.stretch)),
       AsyncStorage.setItem(KEYS.RACING, JSON.stringify(newHistory.racing)),
     ]);
+    
+    // Sync to Supabase
+    syncDailyHabits(date, values);
   };
   
   const updateTotal = async (type: HabitType, total: number) => {
