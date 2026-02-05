@@ -1,3 +1,11 @@
+const secrets = (() => {
+  try {
+    return require('./secrets.json');
+  } catch (e) {
+    return {};
+  }
+})();
+
 export default {
   expo: {
     name: "Habit Tracker",
@@ -47,8 +55,8 @@ export default {
         projectId: "1775dfe2-c17b-43f2-a2a1-f6100dd3116c"
       },
       // Expose environment variables to the app
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+      supabaseUrl: process.env.SUPABASE_URL || secrets.SUPABASE_URL,
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY,
     }
   }
 };
