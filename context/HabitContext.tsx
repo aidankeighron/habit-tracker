@@ -1,7 +1,7 @@
-// import notifee, { AndroidImportance, TriggerType } from '@notifee/react-native';
+import notifee, { AndroidImportance, TriggerType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { DailyHabitData, HabitContextType, HabitHistory, HabitSettings, HabitType } from '../types';
 import { getLocalYYYYMMDD } from '../utils/dateUtils';
 import { supabase } from '../utils/supabase';
@@ -73,22 +73,22 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     loadData();
     registerForPushNotificationsAsync();
   }, []);
-  
+
   async function registerForPushNotificationsAsync() {
-    // if (Platform.OS === 'android') {
-    //   await notifee.createChannelGroup({
-    //     id: 'habitGroup',
-    //     name: 'Habit Reminders',
-    //   });
-    //   await notifee.createChannel({
-    //     id: 'habitReminders',
-    //     name: 'Habit Reminders',
-    //     importance: AndroidImportance.HIGH,
-    //     groupId: 'habitGroup',
-    //   });
-    // }
-    
-    // await notifee.requestPermission();
+    if (Platform.OS === 'android') {
+      await notifee.createChannelGroup({
+        id: 'habitGroup',
+        name: 'Habit Reminders',
+      });
+      await notifee.createChannel({
+        id: 'habitReminders',
+        name: 'Habit Reminders',
+        importance: AndroidImportance.HIGH,
+        groupId: 'habitGroup',
+      });
+    }
+
+    await notifee.requestPermission();
   }
   
     const ensureAuthenticated = async () => {
@@ -285,8 +285,8 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const scheduleReminderForType = async (type: HabitType, lastUpdateStr: string, intervalHours: number) => {
     const identifier = `reminder-${type}`;
-    // await notifee.cancelNotification(identifier);
-    
+    await notifee.cancelNotification(identifier);
+
     const lastUpdate = new Date(lastUpdateStr);
     const now = new Date();
     // Calculate trigger date
@@ -307,22 +307,22 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       title = "Drink Water"
     }
 
-    // await notifee.createTriggerNotification(
-    //   {
-    //     id: identifier,
-    //     title,
-    //     body: `Do your habit!`,
-    //     android: {
-    //         channelId: 'habitReminders',
-    //         groupId: 'habit_reminders_group',
-    //         smallIcon: 'notification_icon',
-    //     }
-    //   },
-    //   {
-    //     type: TriggerType.TIMESTAMP,
-    //     timestamp: triggerDate.getTime(),
-    //   }
-    // );
+    await notifee.createTriggerNotification(
+      {
+        id: identifier,
+        title,
+        body: `Do your habit!`,
+        android: {
+            channelId: 'habitReminders',
+            groupId: 'habit_reminders_group',
+            smallIcon: 'notification_icon',
+        }
+      },
+      {
+        type: TriggerType.TIMESTAMP,
+        timestamp: triggerDate.getTime(),
+      }
+    );
   };
   
   const updateHabit = async (type: HabitType, value: number) => {
@@ -466,13 +466,13 @@ export const HabitProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const resetHabitNotifications = async () => {
     // Cancel all habit reminders
-    // await Promise.all([
-    //   notifee.cancelNotification('reminder-water'),
-    //   notifee.cancelNotification('reminder-food'),
-    //   notifee.cancelNotification('reminder-workout'),
-    //   notifee.cancelNotification('reminder-stretch'),
-    //   notifee.cancelNotification('reminder-racing'),
-    // ]);
+    await Promise.all([
+      notifee.cancelNotification('reminder-water'),
+      notifee.cancelNotification('reminder-food'),
+      notifee.cancelNotification('reminder-workout'),
+      notifee.cancelNotification('reminder-stretch'),
+      notifee.cancelNotification('reminder-racing'),
+    ]);
     // Re-schedule
     await refreshNotifications();
   };
